@@ -1,0 +1,80 @@
+{
+    "name": "piovezanfernando/laravel-api-auto-docs",
+    "description": "Automatically generate Laravel API documentation from request rules, controllers and routes",
+    "keywords": [
+        "piovezanfernando",
+        "laravel",
+        "laravel-api-auto-docs",
+        "api-documentation",
+        "automatic-documentation"
+    ],
+    "homepage": "https://github.com/piovezanfernando/laravel-api-auto-docs",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Fernando Piovezan",
+            "email": "piovezanfernando@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "source": "https://github.com/piovezanfernando/laravel-api-auto-docs",
+        "issues": "https://github.com/piovezanfernando/laravel-api-auto-docs/issues"
+    },
+    "require": {
+        "php": "^8.1|^8.2|^8.3|^8.4",
+        "illuminate/contracts": "^9.0|^10.0|^11.0|^12.0",
+        "kitloong/laravel-app-logger": "^1.0",
+        "spatie/laravel-package-tools": "^1.4.3",
+        "ext-json": "*",
+        "phpdocumentor/reflection-docblock": "^5.4.1"
+    },
+    "require-dev": {
+        "barryvdh/laravel-ide-helper": "^2.12|dev-master",
+        "brianium/paratest": "^6.2|^7.4",
+        "friendsofphp/php-cs-fixer": "^3.5",
+        "larastan/larastan": "^1.0|^2.0",
+        "nunomaduro/collision": "^5.3|^6.0|^8.0",
+        "orchestra/testbench": "^6.15|^7.0|^8.0|^9.0",
+        "phpunit/phpunit": "^9.3|^10.5",
+        "slevomat/coding-standard": "^8.15",
+        "spatie/laravel-ray": "^1.23",
+        "squizlabs/php_codesniffer": "^3.6",
+        "vimeo/psalm": "^4.8|^5.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Piovezanfernando\\LaravelApiAutoDocs\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Piovezanfernando\\LaravelApiAutoDocs\\Tests\\": "tests",
+            "Piovezanfernando\\LaravelApiAutoDocs\\Tests\\Stubs\\": "tests/Stubs"
+        }
+    },
+    "scripts": {
+        "phpstan": "phpstan analyse",
+        "phpcs": "phpcs",
+        "test": "testbench package:test --parallel --no-coverage",
+        "test-coverage": "phpunit --coverage-html coverage"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Piovezanfernando\\LaravelApiAutoDocs\\LaravelApiAutoDocsServiceProvider"
+            ],
+            "aliases": {
+                "ApiAutoDocs": "Piovezanfernando\\LaravelApiAutoDocs\\LaravelApiAutoDocsFacade"
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

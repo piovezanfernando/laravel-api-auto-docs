@@ -1,0 +1,55 @@
+/* Global styles for the application */
+
+body {
+    margin: 0;
+    font-family: var(--font-family);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--surface-ground);
+    color: var(--text-color);
+}
+
+#app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Common utility classes */
+.flex-grow {
+    flex-grow: 1;
+}
+
+.flex-shrink-0 {
+    flex-shrink: 0;
+}
+
+/* Scrollbar utilities */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Postman-like Method Colors */
+.method-tag {
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-align: center;
+    min-width: 45px;
+    display: inline-block;
+}
+
+.method-tag.GET { background-color: #28a745; color: white; }
+.method-tag.POST { background-color: #ffc107; color: black; }
+.method-tag.PUT { background-color: #007bff; color: white; }
+.method-tag.PATCH { background-color: #fd7e14; color: white; }
+.method-tag.DELETE { background-color: #dc3545; color: white; }
+.method-tag.HEAD { background-color: #6c757d; color: white; }
+.font-monospace {
+    font-family: 'Fira Code', 'Courier New', monospace !important;
+}
