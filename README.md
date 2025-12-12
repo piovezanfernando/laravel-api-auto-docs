@@ -1,6 +1,11 @@
 # Laravel API Auto Docs
 
 <p align="center">
+  <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License MIT">
+  <img src="https://img.shields.io/badge/php-8.4%2B-green" alt="PHP 8.4+">
+</p>
+
+<p align="center">
   The Hassle-Free automatic API documentation generation for Laravel.
   <br>
   A Swagger alternative with modern Vue 3 interface.
@@ -201,3 +206,9 @@ The MIT License (MIT). Please see [License File](LICENSE.md) for more informatio
 
 - **Issues**: [GitHub Issues](https://github.com/piovezanfernando/laravel-api-auto-docs/issues)
 - **Original Project**: [Laravel Request Docs](https://github.com/rakutentech/laravel-request-docs)
+
+## Colaboradores
+
+<a href="https://github.com/piovezanfernando/laravel-api-auto-docs/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=piovezanfernando/laravel-api-auto-docs"  alt=""/>
+</a>
