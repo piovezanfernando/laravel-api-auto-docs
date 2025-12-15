@@ -7,6 +7,9 @@ export default defineConfig({
   plugins: [
     vue(),
   ],
+  define: {
+    'import.meta.env.VITE_IS_DEMO': JSON.stringify(process.env.VITE_IS_DEMO)
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

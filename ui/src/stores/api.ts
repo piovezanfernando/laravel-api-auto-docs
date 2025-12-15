@@ -83,11 +83,14 @@ export const useApiStore = defineStore('api', () => {
   async function fetchRoutes() {
     isLoadingRoutes.value = true;
     try {
-      const url = import.meta.env.VITE_IS_DEMO ? '/sample.json' : `${apiHost.value}/docs-api/routes`;
+      // Use explicit string check because the env var might be a string "true" or "false"
+      // thanks to the defines in vite.config.ts
+      const isDemo = import.meta.env.VITE_IS_DEMO === 'true';
+      const url = isDemo ? '/sample.json' : `${apiHost.value}/docs-api/routes`;
       const response = await fetch(url);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
-      if (import.meta.env.VITE_IS_DEMO) {
+      if (isDemo) {
         fullRoutes.value = data;
         // Group by controller for demo
         const grouped: { [key: string]: IAPIInfo[] } = {};
@@ -117,7 +120,8 @@ export const useApiStore = defineStore('api', () => {
     // Clear previous response
     clearResponse();
     try {
-      if (import.meta.env.VITE_IS_DEMO) {
+      const isDemo = import.meta.env.VITE_IS_DEMO === 'true';
+      if (isDemo) {
         selectedRouteDetails.value = fullRoutes.value.find(r => r.uri === id) || null;
       } else {
         const response = await fetch(`${apiHost.value}/docs-api/routes/${id}`);
