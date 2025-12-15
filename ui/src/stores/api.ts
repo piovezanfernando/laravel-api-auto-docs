@@ -7,6 +7,7 @@ export const useApiStore = defineStore('api', () => {
   // --- State ---
   const apiHost = useLocalStorage('apiHost', window.location.origin);
   const rawRoutes = ref<IGroupedRoutes[]>([]);
+  const fullRoutes = ref<IAPIInfo[]>([]);
   const selectedRouteId = ref<string | null>(null);
   const selectedRouteDetails = ref<IAPIInfo | null>(null);
   const isLoadingRoutes = ref<boolean>(false);
@@ -82,9 +83,26 @@ export const useApiStore = defineStore('api', () => {
   async function fetchRoutes() {
     isLoadingRoutes.value = true;
     try {
-      const response = await fetch(`${apiHost.value}/docs-api/routes`);
+      const url = import.meta.env.VITE_IS_DEMO ? '/sample.json' : `${apiHost.value}/docs-api/routes`;
+      const response = await fetch(url);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      rawRoutes.value = await response.json();
+      const data = await response.json();
+      if (import.meta.env.VITE_IS_DEMO) {
+        fullRoutes.value = data;
+        // Group by controller for demo
+        const grouped: { [key: string]: IAPIInfo[] } = {};
+        data.forEach((route: IAPIInfo) => {
+          const group = route.controller || 'Others';
+          if (!grouped[group]) grouped[group] = [];
+          grouped[group].push(route);
+        });
+        rawRoutes.value = Object.keys(grouped).map(group => ({
+          group,
+          routes: grouped[group].map(r => ({ id: r.uri, uri: r.uri, methods: [r.http_method] }))
+        }));
+      } else {
+        rawRoutes.value = data;
+      }
     } catch (err: any) {
       requestError.value = `Failed to fetch routes: ${err.message}. Check API Host setting.`;
       console.error(requestError.value);
@@ -99,9 +117,13 @@ export const useApiStore = defineStore('api', () => {
     // Clear previous response
     clearResponse();
     try {
-      const response = await fetch(`${apiHost.value}/docs-api/routes/${id}`);
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      selectedRouteDetails.value = await response.json();
+      if (import.meta.env.VITE_IS_DEMO) {
+        selectedRouteDetails.value = fullRoutes.value.find(r => r.uri === id) || null;
+      } else {
+        const response = await fetch(`${apiHost.value}/docs-api/routes/${id}`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        selectedRouteDetails.value = await response.json();
+      }
     } catch (err: any) {
       requestError.value = `Failed to fetch route details for ${id}: ${err.message}`;
       console.error(requestError.value);

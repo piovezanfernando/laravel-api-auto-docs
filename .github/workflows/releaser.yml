@@ -56,7 +56,7 @@ jobs:
       - name: Export dist to resources for gh-pages
         working-directory: ./ui
         run: |
-          PUBLIC_BASE=laravel-api-auto-docs npm run export
+          PUBLIC_BASE=laravel-api-auto-docs VITE_IS_DEMO=true npm run export
 
       - name: .nojekyll
         run: touch ./resources/dist/.nojekyll
