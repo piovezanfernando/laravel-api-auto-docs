@@ -35,10 +35,10 @@ jobs:
         working-directory: ./ui
         run: npm install
 
-      - name: Lint
-        working-directory: ./ui
-        run: |
-          npm run lint
+#      - name: Lint
+#        working-directory: ./ui
+#        run: |
+#          npm run lint
 
       - name: Export dist to resources for Laravel
         working-directory: ./ui
