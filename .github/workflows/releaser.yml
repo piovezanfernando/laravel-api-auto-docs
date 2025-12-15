@@ -1,0 +1,69 @@
+on:
+  push:
+    branches:
+      - master
+
+name: CI Release Dist
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-versions:
+          - 20
+
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.12.0
+        with:
+          access_token: ${{ github.token }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-versions }}
+
+      - name: NPM Install
+        working-directory: ./ui
+        run: npm install
+
+      - name: Lint
+        working-directory: ./ui
+        run: |
+          npm run lint
+
+      - name: Export dist to resources for Laravel
+        working-directory: ./ui
+        run: |
+          npm run export
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: (action) Update dist
+          title: (action) Update dist from build
+          branch: update-dist
+          base: master
+
+      - name: Export dist to resources for gh-pages
+        working-directory: ./ui
+        run: |
+          PUBLIC_BASE=laravel-api-auto-docs npm run export
+
+      - name: .nojekyll
+        run: touch ./resources/dist/.nojekyll
+
+      - name: Deploy Demo
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./resources/dist
+          publish_branch: gh-pages

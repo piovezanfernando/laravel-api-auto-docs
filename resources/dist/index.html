@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/api-auto-docs/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Laravel API Auto-Docs</title>
+    <script type="module" crossorigin src="/api-auto-docs/index.js"></script>
+    <link rel="stylesheet" crossorigin href="/api-auto-docs/index.css">
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+</html>
