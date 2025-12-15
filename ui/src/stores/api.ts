@@ -86,7 +86,7 @@ export const useApiStore = defineStore('api', () => {
       // Use explicit string check because the env var might be a string "true" or "false"
       // thanks to the defines in vite.config.ts
       const isDemo = import.meta.env.VITE_IS_DEMO === 'true';
-      const url = isDemo ? '/sample.json' : `${apiHost.value}/docs-api/routes`;
+      const url = isDemo ? `/${import.meta.env.PUBLIC_BASE}/sample.json` : `${apiHost.value}/docs-api/routes`;
       const response = await fetch(url);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();

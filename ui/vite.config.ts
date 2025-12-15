@@ -8,7 +8,8 @@ export default defineConfig({
     vue(),
   ],
   define: {
-    'import.meta.env.VITE_IS_DEMO': JSON.stringify(process.env.VITE_IS_DEMO)
+    'import.meta.env.VITE_IS_DEMO': JSON.stringify(process.env.VITE_IS_DEMO),
+    'import.meta.env.PUBLIC_BASE': JSON.stringify(process.env.PUBLIC_BASE)
   },
   resolve: {
     alias: {
