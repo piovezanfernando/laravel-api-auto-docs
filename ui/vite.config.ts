@@ -3,7 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
-  base: '/api-auto-docs/',
+  base: process.env.PUBLIC_BASE ? `/${process.env.PUBLIC_BASE}/` : '/api-auto-docs/',
   plugins: [
     vue(),
   ],
