@@ -1,53 +1,49 @@
 <template>
-  <div class="h-full flex flex-column bg-surface-card">
-    <div class="p-3 flex-shrink-0">
-        <span class="p-input-icon-left w-full">
-            <i class="pi pi-search" />
-            <InputText type="text" v-model="searchText" placeholder="Search routes" class="w-full" />
-        </span>
-    </div>
-
-    <div class="flex-grow overflow-auto no-scrollbar">
+  <div class="h-full flex flex-column">
+    <div class="flex-grow overflow-auto no-scrollbar" ref="scrollContainer">
       <div v-if="isLoadingRoutes" class="flex justify-content-center align-items-center h-full">
-        <ProgressSpinner />
+        <n-spin size="medium" />
       </div>
-      <div v-else-if="filteredAndSortedRoutes.length === 0" class="text-center text-color-secondary mt-5">
+      <div v-else-if="filteredAndSortedRoutes.length === 0" class="text-center p-5" style="color: var(--n-text-color-disabled);">
         No routes found.
       </div>
-      <Accordion :value="0">
-        <AccordionPanel v-for="group in filteredAndSortedRoutes" :key="group.group" :value="group.group">
-          <AccordionHeader>{{group.group}}</AccordionHeader>
-          <AccordionContent>
-            <div class="p-0">
-              <div v-for="route in group.routes" :key="route.id"
-                   :class="['route-item flex align-items-center p-2 cursor-pointer w-full',
-                            {'bg-primary-reverse text-primary font-semibold': route.id === selectedRouteId}]"
-                   @click="selectRoute(route.id)">
-                <span :class="['method-tag', route.methods[0]]">{{ route.methods[0] }}</span>
-                <span class="route-uri ml-2">{{ route.uri }}</span>
-              </div>
+      <n-collapse v-else v-model:expanded-names="expandedGroupNames">
+        <n-collapse-item 
+          v-for="group in filteredAndSortedRoutes" 
+          :key="group.group" 
+          :name="group.group"
+          :title="group.group"
+        >
+          <div class="routes-list">
+            <div 
+              v-for="route in group.routes" 
+              :key="route.id"
+              :ref="(el) => { if (route.id === selectedRouteId && el) selectedRouteRef = el as HTMLElement }"
+              :class="['route-item', { 'route-item-active': route.id === selectedRouteId }]"
+              @click="selectRoute(route.id)"
+            >
+              <span :class="['method-tag', route.methods[0]]">{{ route.methods[0] }}</span>
+              <span class="route-uri ml-2">{{ route.uri }}</span>
             </div>
-          </AccordionContent>
-        </AccordionPanel>
-      </Accordion>
+          </div>
+        </n-collapse-item>
+      </n-collapse>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { ref, onMounted, watch, nextTick } from 'vue';
+import { NCollapse, NCollapseItem, NSpin } from 'naive-ui';
 import { useApiStore } from '@/stores/api';
 import { storeToRefs } from 'pinia';
 
-import Accordion from 'primevue/accordion';
-import AccordionPanel from 'primevue/accordionpanel';
-import AccordionHeader from 'primevue/accordionheader';
-import AccordionContent from 'primevue/accordioncontent';
-import ProgressSpinner from 'primevue/progressspinner';
-import InputText from 'primevue/inputtext';
-
 const apiStore = useApiStore();
-const { filteredAndSortedRoutes, isLoadingRoutes, selectedRouteId, searchText } = storeToRefs(apiStore);
+const { filteredAndSortedRoutes, isLoadingRoutes, selectedRouteId } = storeToRefs(apiStore);
+
+const expandedGroupNames = ref<string[]>([]); // Start with all closed
+const scrollContainer = ref<HTMLElement>();
+const selectedRouteRef = ref<HTMLElement>();
 
 onMounted(() => {
   apiStore.fetchRoutes();
@@ -56,35 +52,105 @@ onMounted(() => {
 const selectRoute = (id: string) => {
   apiStore.fetchRouteDetails(id);
 };
+
+// Watch for selectedRouteId changes and scroll to it
+watch(selectedRouteId, async (newId) => {
+  if (newId && selectedRouteRef.value && scrollContainer.value) {
+    await nextTick();
+    // Wait a bit for collapse animation
+    setTimeout(() => {
+      if (selectedRouteRef.value && scrollContainer.value) {
+        selectedRouteRef.value.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }
+    }, 300);
+  }
+});
+
+// Expose method to programmatically expand a group (for search functionality)
+defineExpose({ 
+  expandGroup: (groupName: string) => {
+    if (!expandedGroupNames.value.includes(groupName)) {
+      expandedGroupNames.value.push(groupName);
+    }
+  }
+});
 </script>
 
-<style>
-.sidebar-accordion .p-accordion-header-link {
-  padding: 0.75rem 1rem !important;
+<style scoped>
+.flex {
+  display: flex;
 }
-.sidebar-accordion .p-accordion-toggle-icon {
-  transition: transform 0.2s;
+
+.flex-column {
+  flex-direction: column;
 }
-.sidebar-accordion .p-accordion-header:not(.p-disabled).p-accordion-header-active .p-accordion-toggle-icon {
-  transform: rotate(-180deg);
+
+.flex-grow {
+  flex: 1;
 }
-.sidebar-accordion .p-accordion-content {
-  padding: 0.25rem 0 !important;
+
+.h-full {
+  height: 100%;
+}
+
+.overflow-auto {
+  overflow: auto;
+}
+
+.justify-content-center {
+  justify-content: center;
+}
+
+.align-items-center {
+  align-items: center;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.p-5 {
+  padding: 1.25rem;
+}
+
+.ml-2 {
+  margin-left: 0.5rem;
+}
+
+.routes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .route-item {
-  border-radius: 4px;
-  transition: background-color 0.2s;
-  padding-left: 1rem !important;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .route-item:hover {
-  background-color: var(--surface-hover);
+  background-color: rgba(255, 255, 255, 0.05);
 }
+
+.route-item-active {
+  background-color: rgba(99, 102, 241, 0.2);
+  border-left: 3px solid #6366f1;
+  padding-left: calc(0.75rem - 3px);
+}
+
 .route-uri {
   font-size: 0.875rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex: 1;
   min-width: 0;
 }
 </style>

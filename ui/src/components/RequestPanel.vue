@@ -1,62 +1,134 @@
 <template>
-  <div class="h-full flex flex-column surface-ground text-color">
-    <div v-if="!selectedRouteDetails" class="flex align-items-center justify-content-center h-full">
-        <h3 class="text-xl text-color-secondary">Select a route to build your request</h3>
+  <div class="h-full flex flex-column">
+    <div v-if="!selectedRouteDetails" class="flex-center">
+      <h3 class="empty-state">Select a route to build your request</h3>
     </div>
-    <div v-else class="flex flex-column h-full overflow-hidden">
+    <div v-else class="flex flex-column h-full">
       <!-- Request Method and URL Bar -->
-      <div class="flex-shrink-0 p-3 pb-0">
-        <div class="flex align-items-center gap-2 mb-3">
-          <Dropdown
-            v-model="requestMethod"
-            :options="['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD']"
-            placeholder="Method"
-            class="w-8rem"
-            :class="`method-${requestMethod}`"
-            disabled
+      <div class="request-bar">
+        <div class="request-controls">
+          <n-select
+            v-model:value="requestMethod"
+            :options="methodOptions"
+            :disabled="true"
+            size="medium"
+            style="width: 120px;"
           />
-          <InputText :value="finalUrl" class="flex-1" placeholder="Request URL" readonly />
-          <Button icon="pi pi-send" label="Send" :loading="apiStore.sendingRequest" @click="sendCurrentRequest" />
+          <n-input
+            :value="finalUrl"
+            readonly
+            placeholder="Request URL"
+            class="url-input"
+          />
+          <n-button
+            type="primary"
+            :loading="apiStore.sendingRequest"
+            @click="sendCurrentRequest"
+            class="send-button"
+          >
+            <template #icon>
+              <n-icon><SendOutline /></n-icon>
+            </template>
+            Send
+          </n-button>
         </div>
       </div>
 
-      <!-- Request Tabs -->
-      <div class="flex-1 request-tabs-container">
-        <TabView class="h-full">
-          <TabPanel header="Params" value="params">
-              <div class="tab-content-scroll">
-                  <div v-if="pathParams.length > 0" class="mb-4">
-                      <h4 class="text-sm font-semibold mb-3 text-color-secondary">PATH PARAMETERS</h4>
-                      <KeyValueEditor v-model="pathParams" key-readonly />
-                  </div>
-                  <div>
-                      <h4 class="text-sm font-semibold mb-3 text-color-secondary">QUERY PARAMETERS</h4>
-                      <KeyValueEditor v-model="queryParams" />
-                  </div>
-              </div>
-          </TabPanel>
-          <TabPanel header="Headers" value="headers">
-              <div class="tab-content-scroll">
-                  <h4 class="text-sm font-semibold mb-3 text-color-secondary">REQUEST HEADERS</h4>
-                  <KeyValueEditor v-model="headers" />
-              </div>
-          </TabPanel>
-          <TabPanel v-if="requestMethod !== 'GET' && requestMethod !== 'HEAD' && requestMethod !== 'DELETE'" header="Body" value="body">
-              <div class="tab-content-scroll">
-                  <h4 class="text-sm font-semibold mb-3 text-color-secondary">REQUEST BODY (JSON)</h4>
-                  <div class="code-editor-wrapper">
-                    <MonacoEditor v-model="requestBody" lang="json" :readOnly="false" height="500px" width="100%" />
-                  </div>
-              </div>
-          </TabPanel>
-          <TabPanel header="Validation" value="rules">
-              <div class="tab-content-scroll">
-                  <RulesTable v-if="selectedRouteDetails" :rules="selectedRouteDetails.rules" :field-info="selectedRouteDetails.field_info" />
-              </div>
-          </TabPanel>
-        </TabView>
+      <!-- Request Tabs with Button Style -->
+      <div class="request-tabs-container">
+        <div class="tabs-toolbar">
+          <n-space>
+            <n-button
+              :type="currentTab === 'params' ? 'primary' : 'default'"
+              size="small"
+              @click="currentTab = 'params'"
+            >
+              <template #icon>
+                <n-icon><ListOutline /></n-icon>
+              </template>
+              Params
+            </n-button>
+            <n-button
+              :type="currentTab === 'headers' ? 'primary' : 'default'"
+              size="small"
+              @click="currentTab = 'headers'"
+            >
+              <template #icon>
+                <n-icon><CodeSlashOutline /></n-icon>
+              </template>
+              Headers
+            </n-button>
+            <n-button
+              v-if="requestMethod !== 'GET' && requestMethod !== 'HEAD' && requestMethod !== 'DELETE'"
+              :type="currentTab === 'body' ? 'primary' : 'default'"
+              size="small"
+              @click="currentTab = 'body'"
+            >
+              <template #icon>
+                <n-icon><DocumentTextOutline /></n-icon>
+              </template>
+              Body
+            </n-button>
+            <n-button
+              :type="currentTab === 'rules' ? 'primary' : 'default'"
+              size="small"
+              @click="currentTab = 'rules'"
+            >
+              <template #icon>
+                <n-icon><ShieldCheckmarkOutline /></n-icon>
+              </template>
+              Validation
+            </n-button>
+          </n-space>
+        </div>
+
+        <div class="tab-content-area">
+          <div v-if="currentTab === 'params'" class="tab-content-scroll">
+            <div v-if="pathParams.length > 0" class="section">
+              <h4 class="section-title">PATH PARAMETERS</h4>
+              <KeyValueEditor v-model="pathParams" :key-readonly="true" />
+            </div>
+            <div class="section">
+              <h4 class="section-title">QUERY PARAMETERS</h4>
+              <KeyValueEditor v-model="queryParams" />
+            </div>
+          </div>
+
+          <div v-else-if="currentTab === 'headers'" class="tab-content-scroll">
+            <h4 class="section-title">REQUEST HEADERS</h4>
+            <KeyValueEditor v-model="headers" />
+          </div>
+
+          <div v-else-if="currentTab === 'body'" class="tab-content-body">
+            <RequestBodyEditor 
+              v-model="requestBody"
+              @toggle-fullscreen="openBodyFullscreen"
+            />
+          </div>
+
+          <div v-else-if="currentTab === 'rules'" class="tab-content-validation">
+            <RulesTable 
+              v-if="selectedRouteDetails" 
+              :rules="selectedRouteDetails.rules" 
+              :field-info="selectedRouteDetails.field_info" 
+            />
+          </div>
+        </div>
       </div>
     </div>
+
+    <!-- Fullscreen Body Editor -->
+    <n-modal
+      v-model:show="showBodyFullscreen"
+      preset="card"
+      title="Edit Request Body"
+      style="width: 90vw; height: 90vh;"
+      :bordered="false"
+    >
+      <div style="height: calc(90vh - 120px);">
+        <RequestBodyEditor v-model="requestBody" />
+      </div>
+    </n-modal>
   </div>
 </template>
 
@@ -64,14 +136,11 @@
 import { ref, watch, computed } from 'vue';
 import { useApiStore } from '@/stores/api';
 import { storeToRefs } from 'pinia';
-import InputText from 'primevue/inputtext';
-import Button from 'primevue/button';
-import Dropdown from 'primevue/dropdown';
-import TabView from 'primevue/tabview';
-import TabPanel from 'primevue/tabpanel';
+import { NInput, NButton, NSelect, NIcon, NModal, NSpace } from 'naive-ui';
+import { SendOutline, ListOutline, CodeSlashOutline, DocumentTextOutline, ShieldCheckmarkOutline } from '@vicons/ionicons5';
 import RulesTable from '@/components/elements/RulesTable.vue';
-import MonacoEditor from '@/components/elements/MonacoEditor.vue';
 import KeyValueEditor from '@/components/elements/KeyValueEditor.vue';
+import RequestBodyEditor from '@/components/elements/RequestBodyEditor.vue';
 
 type KeyValuePair = { key: string; value: string; };
 
@@ -85,15 +154,31 @@ const headers = ref<KeyValuePair[]>([]);
 const queryParams = ref<KeyValuePair[]>([]);
 const pathParams = ref<KeyValuePair[]>([]);
 
+const showBodyFullscreen = ref(false);
+const currentTab = ref('params');
+
+const methodOptions = [
+  { label: 'GET', value: 'GET' },
+  { label: 'POST', value: 'POST' },
+  { label: 'PUT', value: 'PUT' },
+  { label: 'PATCH', value: 'PATCH' },
+  { label: 'DELETE', value: 'DELETE' },
+  { label: 'HEAD', value: 'HEAD' }
+];
+
 const finalUrl = computed(() => {
-    let url = requestUrl.value;
-    pathParams.value.forEach(param => {
-        if (param.value) {
-            url = url.replace(`{${param.key}}`, param.value);
-        }
-    });
-    return url;
+  let url = requestUrl.value;
+  pathParams.value.forEach(param => {
+    if (param.value) {
+      url = url.replace(`{${param.key}}`, param.value);
+    }
+  });
+  return url;
 });
+
+const openBodyFullscreen = () => {
+  showBodyFullscreen.value = true;
+};
 
 watch(selectedRouteDetails, (newDetails) => {
   if (newDetails) {
@@ -102,17 +187,19 @@ watch(selectedRouteDetails, (newDetails) => {
 
     pathParams.value = (newDetails.uri.match(/\{(\w+)\}/g)?.map(p => ({ key: p.slice(1, -1), value: '' })) || []);
 
-    headers.value = [{ key: 'Content-Type', value: 'application/json' }, { key: 'Accept', value: 'application/json' }];
+    headers.value = [
+      { key: 'Content-Type', value: 'application/json' }, 
+      { key: 'Accept', value: 'application/json' }
+    ];
 
     const examples = newDetails.examples;
     if (examples && Object.keys(examples).length > 0) {
-        requestBody.value = JSON.stringify(examples, null, 2);
+      requestBody.value = JSON.stringify(examples, null, 2);
     } else {
-        requestBody.value = buildBodyFromRules(newDetails.rules);
+      requestBody.value = buildBodyFromRules(newDetails.rules);
     }
 
     queryParams.value = buildParamsFromRules(newDetails.rules, 'query.');
-
   }
 }, { immediate: true, deep: true });
 
@@ -128,74 +215,161 @@ function buildBodyFromRules(rules: any): string {
   const body: { [key: string]: any } = {};
   Object.keys(rules).forEach(key => {
     if (!key.includes('query.')) {
-        body[key] = '';
+      body[key] = '';
     }
   });
   return JSON.stringify(body, null, 2);
 }
 
 function arrayToQueryString(params: KeyValuePair[]): string {
-    const searchParams = new URLSearchParams();
-    params.forEach(p => {
-        if (p.key) searchParams.append(p.key, p.value);
-    });
-    const queryString = searchParams.toString();
-    return queryString ? `?${queryString}` : '';
+  const searchParams = new URLSearchParams();
+  params.forEach(p => {
+    if (p.key) searchParams.append(p.key, p.value);
+  });
+  const queryString = searchParams.toString();
+  return queryString ? `?${queryString}` : '';
 }
 
 function arrayToHeadersObject(params: KeyValuePair[]): { [key: string]: string } {
-    return params.reduce((acc, p) => {
-        if (p.key) acc[p.key] = p.value;
-        return acc;
-    }, {} as { [key: string]: string });
+  return params.reduce((acc, p) => {
+    if (p.key) acc[p.key] = p.value;
+    return acc;
+  }, {} as { [key: string]: string });
 }
 
 const sendCurrentRequest = async () => {
-    if (!selectedRouteDetails.value) return;
+  if (!selectedRouteDetails.value) return;
 
-    apiStore.sendRequest(
-        requestMethod.value,
-        finalUrl.value,
-        requestBody.value,
-        JSON.stringify(arrayToHeadersObject(headers.value)),
-        arrayToQueryString(queryParams.value)
-    );
+  apiStore.sendRequest(
+    requestMethod.value,
+    finalUrl.value,
+    requestBody.value,
+    JSON.stringify(arrayToHeadersObject(headers.value)),
+    arrayToQueryString(queryParams.value)
+  );
 };
+
+// Keyboard shortcut: Ctrl/Cmd + Enter to send
+if (typeof window !== 'undefined') {
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      sendCurrentRequest();
+    }
+  };
+  window.addEventListener('keydown', handleKeyDown);
+}
 </script>
 
 <style scoped>
-.request-tabs-container {
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.request-tabs-container :deep(.p-tabview) {
+.h-full {
   height: 100%;
+}
+
+.flex {
   display: flex;
+}
+
+.flex-column {
   flex-direction: column;
 }
 
-.request-tabs-container :deep(.p-tabview-panels) {
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.empty-state {
+  font-size: 1.25rem;
+  color: var(--n-text-color-disabled);
+}
+
+.request-bar {
+  padding: 1rem;
+  border-bottom: 1px solid var(--n-border-color);
+  flex-shrink: 0;
+}
+
+.request-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.url-input {
   flex: 1;
-  overflow: hidden;
-  padding: 0;
 }
 
-.request-tabs-container :deep(.p-tabview-panel) {
-  height: 100%;
+.send-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s ease;
+}
+
+.send-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.request-tabs-container {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.tabs-toolbar {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--n-border-color);
+  flex-shrink: 0;
+  background: var(--n-color);
+}
+
+.tab-content-area {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .tab-content-scroll {
-  height: 100%;
   overflow-y: auto;
-  overflow-x: hidden;
   padding: 1.5rem;
+  flex: 1;
+  min-height: 0;
 }
 
-.code-editor-wrapper {
-  border: 1px solid var(--surface-border);
-  border-radius: 6px;
-  overflow: hidden;
+.tab-content-body {
+  height: 100%;
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.tab-content-validation {
+  height: 100%;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.section {
+  margin-bottom: 2rem;
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--n-text-color-disabled);
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 </style>

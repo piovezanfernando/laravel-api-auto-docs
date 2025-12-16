@@ -1,41 +1,49 @@
 <template>
   <div class="key-value-editor">
-    <div v-for="(item, index) in modelValue" :key="index" class="flex gap-2 mb-3">
-      <InputText
+    <div v-for="(item, index) in modelValue" :key="index" class="kv-row">
+      <n-input
         placeholder="Key"
-        :model-value="item.key"
+        :value="item.key"
         :readonly="keyReadonly"
-        @update:modelValue="updateItem(index, 'key', $event || '')"
-        class="flex-1"
+        @update:value="updateItem(index, 'key', $event || '')"
+        size="small"
       />
-      <InputText
+      <n-input
         placeholder="Value"
-        :model-value="item.value"
-        @update:modelValue="updateItem(index, 'value', $event || '')"
-        class="flex-1"
+        :value="item.value"
+        @update:value="updateItem(index, 'value', $event || '')"
+        size="small"
       />
-      <Button
-        icon="pi pi-trash"
-        severity="danger"
-        outlined
+      <n-button
+        quaternary
+        type="error"
         @click="removeItem(index)"
         :disabled="keyReadonly"
-      />
+        size="small"
+      >
+        <template #icon>
+          <n-icon><TrashOutline /></n-icon>
+        </template>
+      </n-button>
     </div>
-    <Button
-      label="Add Row"
-      icon="pi pi-plus"
-      size="small"
+    <n-button
       text
+      size="small"
       @click="addItem"
       :disabled="keyReadonly"
-    />
+      class="add-button"
+    >
+      <template #icon>
+        <n-icon><AddOutline /></n-icon>
+      </template>
+      Add Row
+    </n-button>
   </div>
 </template>
 
 <script setup lang="ts">
-import InputText from 'primevue/inputtext';
-import Button from 'primevue/button';
+import { NInput, NButton, NIcon } from 'naive-ui';
+import { TrashOutline, AddOutline } from '@vicons/ionicons5';
 
 interface KeyValuePair {
   key: string;
@@ -68,6 +76,19 @@ const removeItem = (index: number) => {
 
 <style scoped>
 .key-value-editor {
-  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.kv-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.add-button {
+  margin-top: 0.5rem;
 }
 </style>
