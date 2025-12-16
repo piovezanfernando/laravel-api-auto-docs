@@ -1,12 +1,17 @@
 <template>
   <div class="rules-tree-container">
-    <Tree :value="treeData" v-model:expandedKeys="expandedKeys" class="rules-tree" />
+    <n-tree
+      :data="treeData"
+      :default-expanded-keys="defaultExpandedKeys"
+      block-line
+      class="rules-tree"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import Tree from 'primevue/tree';
+import { NTree, type TreeOption } from 'naive-ui';
 import { ruleTranslations } from '@/constants';
 
 interface Props {
@@ -26,7 +31,7 @@ const translateRule = (rule: string) => {
   return ruleTranslations[rule] || rule;
 };
 
-function buildTree(rules: { parameter: string; rules: string[]; description: string }[]): any[] {
+function buildTree(rules: { parameter: string; rules: string[]; description: string }[]): TreeOption[] {
   const root: { [key: string]: any } = {};
 
   rules.forEach(rule => {
@@ -43,28 +48,30 @@ function buildTree(rules: { parameter: string; rules: string[]; description: str
     });
   });
 
-  function toTreeNodes(obj: { [key: string]: any }, parentKey = ''): any[] {
+  function toTreeNodes(obj: { [key: string]: any }, parentKey = ''): TreeOption[] {
     return Object.keys(obj).map(key => {
       const node = obj[key];
       const fullKey = parentKey ? `${parentKey}.${key}` : key;
       const nodeChildren = node.children ? toTreeNodes(node.children, fullKey) : [];
-      const dataChildren = node.data ? [
+      const dataChildren: TreeOption[] = node.data ? [
         ...node.data.rules.map((r: string, idx: number) => ({
           key: `${fullKey}-rule-${idx}`,
-          label: translateRule(r),
-          icon: 'pi pi-fw pi-tag'
+          label: `🏷️ ${translateRule(r)}`,
+          isLeaf: true
         })),
         ...(node.data.description ? [{
           key: `${fullKey}-desc`,
-          label: `Description: ${node.data.description}`,
-          icon: 'pi pi-fw pi-info-circle'
+          label: `ℹ️ ${node.data.description}`,
+          isLeaf: true
         }] : [])
       ] : [];
+      
       return {
         key: fullKey,
-        label: key,
-        icon: node.children || node.data ? 'pi pi-fw pi-folder' : 'pi pi-fw pi-file',
-        children: [...nodeChildren, ...dataChildren]
+        label: `📁 ${key}`,
+        children: [...nodeChildren, ...dataChildren].length > 0 
+          ? [...nodeChildren, ...dataChildren] 
+          : undefined
       };
     });
   }
@@ -86,20 +93,21 @@ const treeData = computed(() => {
   return buildTree(flatRules);
 });
 
-const expandedKeys = ref<Record<string, boolean>>({});
+const defaultExpandedKeys = ref<string[]>([]);
 </script>
 
 <style scoped>
 .rules-tree-container {
   width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  background: #1e1e1e;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.5rem;
 }
 
-.tree-label {
-  color: var(--primary-color);
-  font-weight: 600;
-}
-
-:deep(.p-tree-node-content) {
-  padding: 0.25rem 0;
+.rules-tree {
+  min-height: 0;
 }
 </style>

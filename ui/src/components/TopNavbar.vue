@@ -1,134 +1,251 @@
 <template>
-  <div class="bg-gray-800 text-white p-3 flex align-items-center justify-content-between">
-    <div class="flex align-items-center">
-      <span class="text-xl font-bold mr-5">API Auto-Docs</span>
+  <div class="navbar">
+    <div class="navbar-left">
+      <span class="navbar-title">API Auto-Docs</span>
     </div>
 
-    <div>
-      <Button
-        icon="pi pi-search"
-        label="Search"
-        class="p-button-sm p-button-secondary mr-3"
+    <div class="navbar-right">
+      <n-button
+        size="small"
+        secondary
         @click="$emit('open-search')"
-      />
-      <Button
-        icon="pi pi-shield"
-        label="Auth"
-        class="p-button-sm p-button-secondary mr-3"
+      >
+        <template #icon>
+          <n-icon><SearchOutline /></n-icon>
+        </template>
+        Search
+      </n-button>
+      
+      <n-button
+        size="small"
+        secondary
         @click="showAuthDialog = true"
-      />
-      <Button 
-        icon="pi pi-cog" 
-        class="p-button-rounded p-button-text p-button-sm mr-3" 
+        class="ml-2"
+      >
+        <template #icon>
+          <n-icon><ShieldOutline /></n-icon>
+        </template>
+        Auth
+      </n-button>
+      
+      <n-button
+        size="small"
+        quaternary
+        circle
         @click="toggleSettings"
-      />
-      <Button icon="pi pi-question-circle" class="p-button-rounded p-button-text p-button-sm" />
+        class="ml-2"
+      >
+        <template #icon>
+          <n-icon><SettingsOutline /></n-icon>
+        </template>
+      </n-button>
+      
+      <n-button
+        size="small"
+        quaternary
+        circle
+        @click="$emit('toggle-theme')"
+        class="ml-2"
+      >
+        <template #icon>
+          <n-icon><component :is="isDark ? SunnyOutline : MoonOutline" /></n-icon>
+        </template>
+      </n-button>
+      
+      <n-button
+        size="small"
+        quaternary
+        circle
+        tag="a"
+        href="https://github.com/piovezanfernando/laravel-api-auto-docs"
+        target="_blank"
+        class="ml-2"
+      >
+        <template #icon>
+          <n-icon><HelpCircleOutline /></n-icon>
+        </template>
+      </n-button>
     </div>
   </div>
 
   <!-- Global Auth Dialog -->
-  <Dialog v-model:visible="showAuthDialog" modal header="Global Authentication" :style="{ width: '30vw' }">
-    <div class="p-fluid">
-      <label for="authToken" class="mb-2">Bearer Token</label>
-      <InputText id="authToken" v-model="globalAuthInput" type="text" placeholder="Enter Bearer Token (e.g., Bearer YOUR_TOKEN)" />
+  <n-modal
+    v-model:show="showAuthDialog"
+    preset="dialog"
+    title="Global Authentication"
+    positive-text="Save"
+    negative-text="Clear"
+    @positive-click="saveAuthToken"
+    @negative-click="clearAuthToken"
+  >
+    <div class="dialog-content">
+      <label class="label">Bearer Token</label>
+      <n-input
+        v-model:value="globalAuthInput"
+        type="text"
+        placeholder="Enter Bearer Token (e.g., Bearer YOUR_TOKEN)"
+      />
     </div>
-    <template #footer>
-      <Button label="Clear" icon="pi pi-trash" class="p-button-text p-button-danger" @click="clearAuthToken" />
-      <Button label="Save" icon="pi pi-check" @click="saveAuthToken" />
-    </template>
-  </Dialog>
+  </n-modal>
   
-  <!-- Settings Overlay Panel -->
-  <OverlayPanel ref="op">
-    <div class="p-4" style="width: 250px;">
-      <h4 class="text-lg font-bold mb-2">API Host URL</h4>
-      <div class="p-fluid mb-4">
-        <InputText type="text" v-model="apiStore.apiHost" placeholder="e.g., http://localhost:8000" />
-      </div>
+  <!-- Settings Popover -->
+  <n-popover
+    ref="settingsPopover"
+    trigger="manual"
+    :show="showSettings"
+    @clickoutside="showSettings = false"
+    placement="bottom-end"
+    style="width: 280px;"
+  >
+    <template #trigger>
+      <div ref="settingsTrigger"></div>
+    </template>
+    
+    <div class="settings-panel">
+      <h4 class="settings-title">API Host URL</h4>
+      <n-input 
+        v-model:value="apiStore.apiHost" 
+        placeholder="e.g., http://localhost:8000"
+        size="small"
+      />
 
-      <h4 class="text-lg font-bold mb-2">Sort By</h4>
-      <div class="flex flex-column gap-2">
-        <div class="flex align-items-center">
-            <RadioButton v-model="apiStore.filters.sortBy" inputId="sortAsc" name="sort" value="asc" @change="apiStore.updateFilter('sortBy', 'asc')" />
-            <label for="sortAsc" class="ml-2"> Ascending </label>
-        </div>
-        <div class="flex align-items-center">
-            <RadioButton v-model="apiStore.filters.sortBy" inputId="sortDesc" name="sort" value="desc" @change="apiStore.updateFilter('sortBy', 'desc')" />
-            <label for="sortDesc" class="ml-2"> Descending </label>
-        </div>
-      </div>
+      <h4 class="settings-title">Sort By</h4>
+      <n-radio-group v-model:value="apiStore.filters.sortBy" @update:value="(val) => apiStore.updateFilter('sortBy', val)">
+        <n-space vertical>
+          <n-radio value="asc">Ascending</n-radio>
+          <n-radio value="desc">Descending</n-radio>
+        </n-space>
+      </n-radio-group>
       
-      <h4 class="text-lg font-bold mt-4 mb-2">Method Filters</h4>
-      <div class="flex flex-column gap-2">
-        <div v-for="item in methodFilterItems" :key="item.name" class="flex align-items-center">
-          <InputSwitch :inputId="item.name" v-model="item.active" @change="apiStore.updateFilter(item.name, item.active)" />
-          <label :for="item.name" class="ml-2"> {{ item.name }} </label>
+      <h4 class="settings-title">Method Filters</h4>
+      <n-space vertical>
+        <div v-for="(value, key) in apiStore.filters.showMethod" :key="key" class="filter-item">
+          <n-switch 
+            :value="value" 
+            @update:value="(val) => apiStore.updateFilter(key, val)"
+            size="small"
+          />
+          <span class="filter-label">{{ key }}</span>
         </div>
-      </div>
+      </n-space>
     </div>
-  </OverlayPanel>
+  </n-popover>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue';
-import Button from 'primevue/button';
-import Dialog from 'primevue/dialog';
-import InputText from 'primevue/inputtext';
-import OverlayPanel from 'primevue/overlaypanel';
-import RadioButton from 'primevue/radiobutton';
-import InputSwitch from 'primevue/inputswitch';
+import { ref, watch } from 'vue';
+import { NButton, NModal, NInput, NPopover, NRadioGroup, NRadio, NSpace, NSwitch, NIcon } from 'naive-ui';
+import { SearchOutline, ShieldOutline, SettingsOutline, HelpCircleOutline, MoonOutline, SunnyOutline } from '@vicons/ionicons5';
 import { useApiStore } from '@/stores/api';
 import { storeToRefs } from 'pinia';
-import type { FilterState } from '@/types';
 
-const emit = defineEmits(['open-search']);
+defineProps<{
+  isDark: boolean;
+}>();
+
+const emit = defineEmits(['open-search', 'toggle-theme']);
 const apiStore = useApiStore();
 const { globalAuthToken } = storeToRefs(apiStore);
 
 const showAuthDialog = ref(false);
 const globalAuthInput = ref(globalAuthToken.value || '');
 
-const op = ref();
-const toggleSettings = (event: any) => {
-    op.value.toggle(event);
+const showSettings = ref(false);
+const settingsTrigger = ref<HTMLElement>();
+
+const toggleSettings = () => {
+  showSettings.value = !showSettings.value;
 };
 
 const saveAuthToken = () => {
   apiStore.setGlobalAuthToken(globalAuthInput.value);
   showAuthDialog.value = false;
+  return true; // for n-modal positive-click
 };
 
 const clearAuthToken = () => {
   globalAuthInput.value = '';
   apiStore.setGlobalAuthToken(null);
-  showAuthDialog.value = false;
+  return true; // for n-modal negative-click  
 };
 
-// Sync globalAuthInput with store's globalAuthToken when dialog opens
-onMounted(() => {
-  globalAuthInput.value = globalAuthToken.value || '';
-});
-
-// Watch globalAuthToken in store to update local input if cleared from elsewhere
+// Watch globalAuthToken in store to update local input if cleared elsewhere
 watch(globalAuthToken, (newValue: string | null) => {
   if (newValue === null) {
     globalAuthInput.value = '';
+  } else {
+    globalAuthInput.value = newValue;
   }
-});
-
-const methodFilterItems = computed(() => {
-  return (Object.keys(apiStore.filters.showMethod) as Array<keyof FilterState['showMethod']>).map(name => ({
-    name: name,
-    active: apiStore.filters.showMethod[name]
-  }));
 });
 </script>
 
 <style scoped>
-/* Adjustments for PrimeVue components */
-.p-button.p-button-text.p-button-sm {
-  width: 2rem;
-  height: 2rem;
-  padding: 0;
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: var(--n-color);
+  border-bottom: 1px solid var(--n-border-color);
+  height: 4rem;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--n-text-color);
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ml-2 {
+  margin-left: 0.5rem;
+}
+
+.dialog-content {
+  padding: 1rem 0;
+}
+
+.label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--n-text-color);
+}
+
+.settings-panel {
+  padding: 0.5rem;
+}
+
+.settings-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 1rem 0 0.5rem 0;
+  color: var(--n-text-color);
+}
+
+.settings-title:first-child {
+  margin-top: 0;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-label {
+  font-size: 0.875rem;
+  color: var(--n-text-color);
 }
 </style>

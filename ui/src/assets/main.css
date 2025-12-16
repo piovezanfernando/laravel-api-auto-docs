@@ -1,27 +1,35 @@
 /* Global styles for the application */
 
+* {
+  box-sizing: border-box;
+}
+
 body {
-    margin: 0;
-    font-family: var(--font-family);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    background-color: var(--surface-ground);
-    color: var(--text-color);
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #app {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+  min-height: 100vh;
 }
 
-/* Common utility classes */
+/* Utility classes */
 .flex-grow {
-    flex-grow: 1;
+  flex-grow: 1;
 }
 
 .flex-shrink-0 {
-    flex-shrink: 0;
+  flex-shrink: 0;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.h-full {
+  height: 100%;
 }
 
 /* Scrollbar utilities */
@@ -33,23 +41,111 @@ body {
   scrollbar-width: none;  /* Firefox */
 }
 
-/* Postman-like Method Colors */
-.method-tag {
-    padding: 0.15rem 0.4rem;
-    border-radius: 3px;
-    font-size: 0.75rem;
-    font-weight: bold;
-    text-align: center;
-    min-width: 45px;
-    display: inline-block;
+/* Custom scrollbar for code viewers */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-.method-tag.GET { background-color: #28a745; color: white; }
-.method-tag.POST { background-color: #ffc107; color: black; }
-.method-tag.PUT { background-color: #007bff; color: white; }
-.method-tag.PATCH { background-color: #fd7e14; color: white; }
-.method-tag.DELETE { background-color: #dc3545; color: white; }
-.method-tag.HEAD { background-color: #6c757d; color: white; }
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* HTTP Method Tags - Vibrant gradient styles */
+.method-tag {
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  min-width: 50px;
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.method-tag:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.method-tag.GET {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.method-tag.POST {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+}
+
+.method-tag.PUT {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+}
+
+.method-tag.PATCH {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white;
+}
+
+.method-tag.DELETE {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}
+
+.method-tag.HEAD {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  color: white;
+}
+
+/* Font monospace */
 .font-monospace {
-    font-family: 'Fira Code', 'Courier New', monospace !important;
+  font-family: 'Fira Code', 'Courier New', Monaco, monospace !important;
+}
+
+/* Smooth transitions */
+.transition-all {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Copy button styles */
+.copy-button {
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.copy-button:hover {
+  opacity: 1;
+}
+
+/* Code block styles */
+.code-block {
+  background: #1e1e1e;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.code-block pre {
+  margin: 0;
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+.code-block code {
+  font-family: 'Fira Code', 'Courier New', Monaco, monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
