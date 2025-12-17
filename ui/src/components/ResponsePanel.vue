@@ -1,5 +1,48 @@
 <template>
   <div class="h-full flex flex-column">
+    <!-- Example Mode Selector -->
+    <div v-if="isExampleMode && hasExamples" class="example-selector">
+      <span class="selector-label">Example Response:</span>
+      <n-space>
+        <n-button
+          v-for="(_, status) in exampleResponses"
+          :key="status"
+          :type="selectedExampleStatus === Number(status) ? 'primary' : 'default'"
+          size="small"
+          @click="selectExample(Number(status))"
+        >
+          {{ status }}
+        </n-button>
+      </n-space>
+    </div>
+
+    <!-- Example Content -->
+    <div v-if="isExampleMode" class="flex flex-column h-full">
+      <div v-if="!hasExamples" class="flex-center">
+        <h3 class="empty-state">No example responses configured</h3>
+      </div>
+      <div v-else-if="currentExample" class="flex flex-column h-full">
+        <div class="response-toolbar">
+          <n-space align="center">
+            <n-tag type="info">Example</n-tag>
+            <n-tag :type="getStatusType(currentExample.status)">
+              {{ currentExample.status }}
+            </n-tag>
+          </n-space>
+        </div>
+        <div class="response-content">
+          <CodeViewer 
+            :code="JSON.stringify(currentExample.data, null, 2)" 
+            language="json"
+            allow-fullscreen
+            @toggle-fullscreen="openFullscreen(JSON.stringify(currentExample.data, null, 2), 'json', 'Example Response')"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Content -->
+    <template v-else>
     <div v-if="sendingRequest" class="flex-center">
       <n-spin size="large" />
     </div>
@@ -119,6 +162,9 @@
       </div>
     </div>
 
+    <!-- /Live Content -->
+    </template>
+
     <!-- Fullscreen Modal -->
     <n-modal
       v-model:show="showFullscreen"
@@ -154,8 +200,40 @@ import { responsesText } from '@/constants';
 const apiStore = useApiStore();
 const {
   responseData, responseStatus, responseHeaders, sqlData, logsData,
-  modelsData, timeTaken, requestError, sendingRequest
+  modelsData, timeTaken, requestError, sendingRequest, 
+  selectedRouteDetails, isExampleMode, selectedExampleStatus
 } = storeToRefs(apiStore);
+
+const exampleResponses = computed(() => {
+  return (selectedRouteDetails.value?.responses || {}) as Record<string, any>;
+});
+
+const hasExamples = computed(() => {
+  return exampleResponses.value && Object.keys(exampleResponses.value).length > 0;
+});
+
+const currentExample = computed(() => {
+  if (!hasExamples.value) return null;
+  // If selected status is not available, default to the first one (usually 200)
+  const examples = exampleResponses.value;
+  if (examples[selectedExampleStatus.value]) {
+    return { status: selectedExampleStatus.value, data: examples[selectedExampleStatus.value] };
+  }
+  // Fallback to first available
+  const firstStatus = Object.keys(examples)[0];
+  return { status: Number(firstStatus), data: examples[Number(firstStatus)] };
+});
+
+const selectExample = (status: number) => {
+  apiStore.setExampleStatus(status);
+};
+
+const getStatusType = (status: number) => {
+  if (status >= 200 && status < 300) return 'success';
+  if (status >= 400 && status < 500) return 'warning';
+  if (status >= 500) return 'error';
+  return 'info';
+};
 
 const currentTab = ref('body');
 
@@ -272,5 +350,20 @@ const modelsCount = computed(() => {
   padding: 1rem;
   display: flex;
   flex-direction: column;
+}
+
+.example-selector {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--n-border-color);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--n-color);
+}
+
+.selector-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--n-text-color);
 }
 </style>

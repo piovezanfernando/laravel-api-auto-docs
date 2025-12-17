@@ -39,6 +39,10 @@ export const useApiStore = defineStore('api', () => {
   const modelsData = ref<any>({});
   const serverMemory = ref<string>('');
 
+  // Example responses state
+  const isExampleMode = ref<boolean>(false);
+  const selectedExampleStatus = ref<number>(200);
+
   // --- Getters ---
   const filteredAndSortedRoutes = computed(() => {
     let result = [...rawRoutes.value];
@@ -220,10 +224,22 @@ export const useApiStore = defineStore('api', () => {
     setGlobalAuthToken(null);
   }
 
+  function setExampleMode(enabled: boolean) {
+    isExampleMode.value = enabled;
+    if (enabled) {
+      clearResponse();
+    }
+  }
+
+  function setExampleStatus(status: number) {
+    selectedExampleStatus.value = status;
+  }
+
   return {
     apiHost, rawRoutes, selectedRouteId, selectedRouteDetails, isLoadingRoutes, isLoadingDetails, globalAuthToken, filters, searchText,
     sendingRequest, requestError, responseData, responseHeaders, responseStatus, timeTaken, sqlData, logsData, modelsData, serverMemory,
     filteredAndSortedRoutes,
     fetchRoutes, fetchRouteDetails, setGlobalAuthToken, updateFilter, setSearchText, sendRequest, clearResponse, clearAllFilters,
+    isExampleMode, selectedExampleStatus, setExampleMode, setExampleStatus,
   };
 });

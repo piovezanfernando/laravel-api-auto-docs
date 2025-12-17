@@ -7,6 +7,20 @@
       <!-- Request Method and URL Bar -->
       <div class="request-bar">
         <div class="request-controls">
+          <n-button-group size="medium">
+            <n-button 
+              :type="!apiStore.isExampleMode ? 'primary' : 'default'"
+              @click="apiStore.setExampleMode(false)"
+            >
+              Live
+            </n-button>
+            <n-button 
+              :type="apiStore.isExampleMode ? 'primary' : 'default'"
+              @click="apiStore.setExampleMode(true)"
+            >
+              Example
+            </n-button>
+          </n-button-group>
           <n-select
             v-model:value="requestMethod"
             :options="methodOptions"
@@ -21,6 +35,7 @@
             class="url-input"
           />
           <n-button
+            v-if="!apiStore.isExampleMode"
             type="primary"
             :loading="apiStore.sendingRequest"
             @click="sendCurrentRequest"
@@ -136,7 +151,7 @@
 import { ref, watch, computed } from 'vue';
 import { useApiStore } from '@/stores/api';
 import { storeToRefs } from 'pinia';
-import { NInput, NButton, NSelect, NIcon, NModal, NSpace } from 'naive-ui';
+import { NInput, NButton, NSelect, NIcon, NModal, NSpace, NButtonGroup } from 'naive-ui';
 import { SendOutline, ListOutline, CodeSlashOutline, DocumentTextOutline, ShieldCheckmarkOutline } from '@vicons/ionicons5';
 import RulesTable from '@/components/elements/RulesTable.vue';
 import KeyValueEditor from '@/components/elements/KeyValueEditor.vue';

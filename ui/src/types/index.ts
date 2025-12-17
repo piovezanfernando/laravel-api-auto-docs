@@ -38,12 +38,13 @@ export interface IAPIInfo {
   field_info: IAPIFieldInfos;
   rules_order: string[];
   tag: string;
+  exampleResponses?: Record<number, any>;
 }
 
 export interface IRouteInfo {
-    id: string;
-    uri: string;
-    methods: string[]; // Methods array for the route (e.g., ["GET"])
+  id: string;
+  uri: string;
+  methods: string[]; // Methods array for the route (e.g., ["GET"])
 }
 
 export interface IGroupedRoutes {
