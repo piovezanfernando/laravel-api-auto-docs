@@ -97,6 +97,16 @@ class Doc implements Arrayable
     private int $groupIndex;
 
     /**
+     * Translated model singular name.
+     */
+    private string $translatedModelSingular;
+
+    /**
+     * Translated model plural name.
+     */
+    private string $translatedModelPlural;
+
+    /**
      * Description list and examples for fields.
      *
      * @var array<string, string[]>
@@ -184,6 +194,8 @@ class Doc implements Arrayable
         $this->summary            = $summary;
         $this->description        = $description;
         $this->tag                = $tag;
+        $this->translatedModelSingular = '';
+        $this->translatedModelPlural = '';
     }
 
     public function getUri(): string
@@ -248,9 +260,29 @@ class Doc implements Arrayable
         $this->controllerFullPath = $controllerFullPath;
     }
 
+    public function setTranslatedModelSingular(string $translatedModelSingular): void
+    {
+        $this->translatedModelSingular = $translatedModelSingular;
+    }
+
+    public function setTranslatedModelPlural(string $translatedModelPlural): void
+    {
+        $this->translatedModelPlural = $translatedModelPlural;
+    }
+
     public function getMethod(): string
     {
         return $this->method;
+    }
+
+    public function getTranslatedModelSingular(): string
+    {
+        return $this->translatedModelSingular;
+    }
+
+    public function getTranslatedModelPlural(): string
+    {
+        return $this->translatedModelPlural;
     }
 
     public function setMethod(string $method): void
@@ -484,6 +516,9 @@ class Doc implements Arrayable
         if (isset($this->groupIndex)) {
             $result['group_index'] = $this->groupIndex;
         }
+
+        $result['translated_model_singular'] = $this->translatedModelSingular;
+        $result['translated_model_plural'] = $this->translatedModelPlural;
 
         return $result;
     }

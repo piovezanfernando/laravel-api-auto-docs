@@ -43,6 +43,9 @@ export const useApiStore = defineStore('api', () => {
   const isExampleMode = ref<boolean>(false);
   const selectedExampleStatus = ref<number>(200);
 
+  // Config state
+  const config = ref<any>(null);
+
   // --- Getters ---
   const filteredAndSortedRoutes = computed(() => {
     let result = [...rawRoutes.value];
@@ -132,6 +135,8 @@ export const useApiStore = defineStore('api', () => {
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         selectedRouteDetails.value = await response.json();
       }
+      // Reset example status when selecting a new route
+      selectedExampleStatus.value = 200;
     } catch (err: any) {
       requestError.value = `Failed to fetch route details for ${id}: ${err.message}`;
       console.error(requestError.value);
@@ -155,6 +160,17 @@ export const useApiStore = defineStore('api', () => {
 
   function setSearchText(text: string) {
     searchText.value = text;
+  }
+
+  async function fetchConfig() {
+    try {
+      const response = await fetch(`${apiHost.value}/docs-api/config`);
+      if (response.ok) {
+        config.value = await response.json();
+      }
+    } catch (error) {
+      console.error('Failed to fetch config:', error);
+    }
   }
 
   async function sendRequest(method: string, url: string, body: string, headers: string, queryParams: string) {
@@ -238,8 +254,9 @@ export const useApiStore = defineStore('api', () => {
   return {
     apiHost, rawRoutes, selectedRouteId, selectedRouteDetails, isLoadingRoutes, isLoadingDetails, globalAuthToken, filters, searchText,
     sendingRequest, requestError, responseData, responseHeaders, responseStatus, timeTaken, sqlData, logsData, modelsData, serverMemory,
+    config,
     filteredAndSortedRoutes,
-    fetchRoutes, fetchRouteDetails, setGlobalAuthToken, updateFilter, setSearchText, sendRequest, clearResponse, clearAllFilters,
+    fetchRoutes, fetchRouteDetails, fetchConfig, setGlobalAuthToken, updateFilter, setSearchText, sendRequest, clearResponse, clearAllFilters,
     isExampleMode, selectedExampleStatus, setExampleMode, setExampleStatus,
   };
 });

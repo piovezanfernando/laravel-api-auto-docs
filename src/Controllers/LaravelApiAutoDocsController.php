@@ -81,6 +81,7 @@ class LaravelApiAutoDocsController extends Controller
         $config = [
             'title' => config('api-auto-docs.title'),
             'default_headers' => config('api-auto-docs.default_headers'),
+            'responses' => $this->laravelApiAutoDocs->replaceTranslate(),
         ];
         return response()->json($config);
     }

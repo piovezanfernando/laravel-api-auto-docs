@@ -7,20 +7,6 @@
       <!-- Request Method and URL Bar -->
       <div class="request-bar">
         <div class="request-controls">
-          <n-button-group size="medium">
-            <n-button 
-              :type="!apiStore.isExampleMode ? 'primary' : 'default'"
-              @click="apiStore.setExampleMode(false)"
-            >
-              Live
-            </n-button>
-            <n-button 
-              :type="apiStore.isExampleMode ? 'primary' : 'default'"
-              @click="apiStore.setExampleMode(true)"
-            >
-              Example
-            </n-button>
-          </n-button-group>
           <n-select
             v-model:value="requestMethod"
             :options="methodOptions"
@@ -116,7 +102,8 @@
 
           <div v-else-if="currentTab === 'body'" class="tab-content-body">
             <RequestBodyEditor 
-              v-model="requestBody"
+              :code="requestBody"
+              @update:code="requestBody = $event"
               @toggle-fullscreen="openBodyFullscreen"
             />
           </div>
@@ -141,7 +128,7 @@
       :bordered="false"
     >
       <div style="height: calc(90vh - 120px);">
-        <RequestBodyEditor v-model="requestBody" />
+        <RequestBodyEditor :code="requestBody" @update:code="requestBody = $event" />
       </div>
     </n-modal>
   </div>

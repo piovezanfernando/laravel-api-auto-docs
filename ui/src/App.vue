@@ -71,6 +71,7 @@ provide('isDark', isDark);
 
 onMounted(async () => {
   await apiStore.fetchRoutes();
+  await apiStore.fetchConfig();
 });
 </script>
 

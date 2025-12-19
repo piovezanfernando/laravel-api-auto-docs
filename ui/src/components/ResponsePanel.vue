@@ -1,169 +1,163 @@
 <template>
   <div class="h-full flex flex-column">
-    <!-- Example Mode Selector -->
-    <div v-if="isExampleMode && hasExamples" class="example-selector">
-      <span class="selector-label">Example Response:</span>
-      <n-space>
-        <n-button
-          v-for="(_, status) in exampleResponses"
-          :key="status"
-          :type="selectedExampleStatus === Number(status) ? 'primary' : 'default'"
-          size="small"
-          @click="selectExample(Number(status))"
-        >
-          {{ status }}
-        </n-button>
-      </n-space>
-    </div>
-
-    <!-- Example Content -->
-    <div v-if="isExampleMode" class="flex flex-column h-full">
-      <div v-if="!hasExamples" class="flex-center">
-        <h3 class="empty-state">No example responses configured</h3>
-      </div>
-      <div v-else-if="currentExample" class="flex flex-column h-full">
-        <div class="response-toolbar">
-          <n-space align="center">
-            <n-tag type="info">Example</n-tag>
-            <n-tag :type="getStatusType(currentExample.status)">
-              {{ currentExample.status }}
-            </n-tag>
-          </n-space>
+    <n-tabs
+      v-model:value="activeMode"
+      type="line"
+      animated
+      class="response-tabs"
+      pane-class="response-tab-pane"
+      :tabs-padding="20"
+    >
+      <n-tab-pane name="live" tab="Live">
+        <div v-if="sendingRequest" class="flex-center tab-pane-content">
+          <n-spin size="large" />
         </div>
-        <div class="response-content">
-          <CodeViewer 
-            :code="JSON.stringify(currentExample.data, null, 2)" 
-            language="json"
-            allow-fullscreen
-            @toggle-fullscreen="openFullscreen(JSON.stringify(currentExample.data, null, 2), 'json', 'Example Response')"
-          />
+        <div v-else-if="requestError" class="p-3 tab-pane-content">
+          <n-alert type="error" :closable="false">
+            {{ requestError }}
+          </n-alert>
         </div>
-      </div>
-    </div>
+        <div v-else-if="responseStatus === 0" class="flex-center tab-pane-content">
+          <h3 class="empty-state">Send a request to see the response</h3>
+        </div>
+        <div v-else class="flex flex-column h-full">
+          <!-- Toolbar -->
+          <div class="response-toolbar">
+            <n-space>
+              <n-button
+                :type="currentTab === 'body' ? 'primary' : 'default'"
+                size="small"
+                @click="currentTab = 'body'"
+              >
+                <template #icon>
+                  <n-icon><CodeSlashOutline /></n-icon>
+                </template>
+                Body
+              </n-button>
+              <n-button
+                :type="currentTab === 'headers' ? 'primary' : 'default'"
+                size="small"
+                @click="currentTab = 'headers'"
+              >
+                <template #icon>
+                  <n-icon><ListOutline /></n-icon>
+                </template>
+                Headers
+                <n-badge v-if="headersCount !== null" :value="headersCount" :type="headersCount === 0 ? 'error' : 'info'" class="ml-1" />
+              </n-button>
+              <n-button
+                :type="currentTab === 'sql' ? 'primary' : 'default'"
+                size="small"
+                @click="currentTab = 'sql'"
+              >
+                <template #icon>
+                  <n-icon><ServerOutline /></n-icon>
+                </template>
+                SQL
+                <n-badge v-if="sqlCount !== null" :value="sqlCount" :type="sqlCount === 0 ? 'error' : 'info'" class="ml-1" />
+              </n-button>
+              <n-button
+                :type="currentTab === 'logs' ? 'primary' : 'default'"
+                size="small"
+                @click="currentTab = 'logs'"
+              >
+                <template #icon>
+                  <n-icon><DocumentTextOutline /></n-icon>
+                </template>
+                Logs
+                <n-badge v-if="logsCount !== null" :value="logsCount" :type="logsCount === 0 ? 'error' : 'info'" class="ml-1" />
+              </n-button>
+              <n-button
+                :type="currentTab === 'models' ? 'primary' : 'default'"
+                size="small"
+                @click="currentTab = 'models'"
+              >
+                <template #icon>
+                  <n-icon><GitNetworkOutline /></n-icon>
+                </template>
+                Models
+                <n-badge v-if="modelsCount !== null" :value="modelsCount" :type="modelsCount === 0 ? 'error' : 'info'" class="ml-1" />
+              </n-button>
+            </n-space>
+          </div>
 
-    <!-- Live Content -->
-    <template v-else>
-    <div v-if="sendingRequest" class="flex-center">
-      <n-spin size="large" />
-    </div>
-    <div v-else-if="requestError" class="p-3">
-      <n-alert type="error" :closable="false">
-        {{ requestError }}
-      </n-alert>
-    </div>
-    <div v-else-if="responseStatus === 0" class="flex-center">
-      <h3 class="empty-state">Send a request to see the response</h3>
-    </div>
-    <div v-else class="flex flex-column h-full">
-      <!-- Toolbar -->
-      <div class="response-toolbar">
-        <n-space>
-          <n-button
-            :type="currentTab === 'body' ? 'primary' : 'default'"
-            size="small"
-            @click="currentTab = 'body'"
-          >
-            <template #icon>
-              <n-icon><CodeSlashOutline /></n-icon>
-            </template>
-            Body
-          </n-button>
-          <n-button
-            :type="currentTab === 'headers' ? 'primary' : 'default'"
-            size="small"
-            @click="currentTab = 'headers'"
-          >
-            <template #icon>
-              <n-icon><ListOutline /></n-icon>
-            </template>
-            Headers
-            <n-badge v-if="headersCount !== null" :value="headersCount" :type="headersCount === 0 ? 'error' : 'info'" class="ml-1" />
-          </n-button>
-          <n-button
-            :type="currentTab === 'sql' ? 'primary' : 'default'"
-            size="small"
-            @click="currentTab = 'sql'"
-          >
-            <template #icon>
-              <n-icon><ServerOutline /></n-icon>
-            </template>
-            SQL
-            <n-badge v-if="sqlCount !== null" :value="sqlCount" :type="sqlCount === 0 ? 'error' : 'info'" class="ml-1" />
-          </n-button>
-          <n-button
-            :type="currentTab === 'logs' ? 'primary' : 'default'"
-            size="small"
-            @click="currentTab = 'logs'"
-          >
-            <template #icon>
-              <n-icon><DocumentTextOutline /></n-icon>
-            </template>
-            Logs
-            <n-badge v-if="logsCount !== null" :value="logsCount" :type="logsCount === 0 ? 'error' : 'info'" class="ml-1" />
-          </n-button>
-          <n-button
-            :type="currentTab === 'models' ? 'primary' : 'default'"
-            size="small"
-            @click="currentTab = 'models'"
-          >
-            <template #icon>
-              <n-icon><GitNetworkOutline /></n-icon>
-            </template>
-            Models
-            <n-badge v-if="modelsCount !== null" :value="modelsCount" :type="modelsCount === 0 ? 'error' : 'info'" class="ml-1" />
-          </n-button>
-        </n-space>
-        <n-space align="center">
-          <n-tag :type="responseTagType" size="medium">
-            {{ responseStatus }} {{ responseStatusText }}
-          </n-tag>
-          <span class="meta-text">{{ roundedTime }}ms</span>
-          <span class="meta-text">{{ responseSize }}</span>
-        </n-space>
-      </div>
-      
-      <!-- Content -->
-      <div class="response-content">
-        <CodeViewer 
-          v-if="currentTab === 'body'" 
-          :code="responseData" 
-          language="json"
-          allow-fullscreen
-          @toggle-fullscreen="openFullscreen(responseData, 'json', 'Response Body')"
-        />
-        <CodeViewer 
-          v-else-if="currentTab === 'headers'" 
-          :code="JSON.stringify(responseHeaders, null, 2)" 
-          language="json"
-          allow-fullscreen
-          @toggle-fullscreen="openFullscreen(JSON.stringify(responseHeaders, null, 2), 'json', 'Response Headers')"
-        />
-        <CodeViewer 
-          v-else-if="currentTab === 'sql'" 
-          :code="sqlData || 'No SQL queries recorded'" 
-          language="sql"
-          allow-fullscreen
-          @toggle-fullscreen="openFullscreen(sqlData || 'No SQL queries recorded', 'sql', 'SQL Queries')"
-        />
-        <CodeViewer 
-          v-else-if="currentTab === 'logs'" 
-          :code="logsData || 'No logs recorded'" 
-          language="text"
-          allow-fullscreen
-          @toggle-fullscreen="openFullscreen(logsData || 'No logs recorded', 'text', 'Logs')"
-        />
-        <CodeViewer 
-          v-else-if="currentTab === 'models'" 
-          :code="JSON.stringify(modelsData, null, 2)" 
-          language="json"
-          allow-fullscreen
-          @toggle-fullscreen="openFullscreen(JSON.stringify(modelsData, null, 2), 'json', 'Models Events')"
-        />
-      </div>
-    </div>
+          <!-- Content -->
+          <div class="response-content">
+            <RequestBodyEditor
+              v-if="currentTab === 'body'"
+              :code="responseData"
+              language="json"
+              :readonly="true"
+              @toggle-fullscreen="openFullscreen(responseData, 'json', 'Response Body')"
+            />
+            <RequestBodyEditor
+              v-else-if="currentTab === 'headers'"
+              :code="JSON.stringify(responseHeaders, null, 2)"
+              language="json"
+              :readonly="true"
+              @toggle-fullscreen="openFullscreen(JSON.stringify(responseHeaders, null, 2), 'json', 'Response Headers')"
+            />
+            <RequestBodyEditor
+              v-else-if="currentTab === 'sql'"
+              :code="sqlData || 'No SQL queries recorded'"
+              language="sql"
+              :readonly="true"
+              @toggle-fullscreen="openFullscreen(sqlData || 'No SQL queries recorded', 'sql', 'SQL Queries')"
+            />
+            <RequestBodyEditor
+              v-else-if="currentTab === 'logs'"
+              :code="logsData || 'No logs recorded'"
+              language="text"
+              :readonly="true"
+              @toggle-fullscreen="openFullscreen(logsData || 'No logs recorded', 'text', 'Logs')"
+            />
+            <RequestBodyEditor
+              v-else-if="currentTab === 'models'"
+              :code="JSON.stringify(modelsData, null, 2)"
+              language="json"
+              :readonly="true"
+              @toggle-fullscreen="openFullscreen(JSON.stringify(modelsData, null, 2), 'json', 'Models Events')"
+            />
+          </div>
+        </div>
+      </n-tab-pane>
 
-    <!-- /Live Content -->
-    </template>
+      <n-tab-pane name="example" tab="Example">
+        <div v-if="!selectedRouteDetails" class="flex-center tab-pane-content">
+          <h3 class="empty-state">Select a route to see examples</h3>
+        </div>
+        <div v-else>
+          <div v-if="!hasExamples" class="flex-center tab-pane-content">
+            <h3 class="empty-state">No example responses configured for this route</h3>
+          </div>
+          <div v-else class="flex flex-column h-full">
+            <div class="example-selector">
+              <span class="selector-label">Example Response:</span>
+              <n-space>
+                <n-button
+                  v-for="(_, status) in exampleResponses"
+                  :key="status"
+                  :type="getStatusType(Number(status))"
+                  :ghost="selectedExampleStatus !== Number(status)"
+                  size="small"
+                  @click="selectExample(Number(status))"
+                >
+                  {{ status }}
+                </n-button>
+              </n-space>
+            </div>
+            <div v-if="currentExample" class="response-content">
+              <RequestBodyEditor
+                :code="JSON.stringify(currentExample.data, null, 2)"
+                language="json"
+                :readonly="true"
+                @toggle-fullscreen="openFullscreen(JSON.stringify(currentExample.data, null, 2), 'json', 'Example Response Body')"
+              />
+            </div>
+          </div>
+        </div>
+      </n-tab-pane>
+    </n-tabs>
 
     <!-- Fullscreen Modal -->
     <n-modal
@@ -173,51 +167,92 @@
       style="width: 90vw; height: 90vh;"
       :bordered="false"
     >
-      <CodeViewer 
+      <RequestBodyEditor
         :code="fullscreenCode"
         :language="fullscreenLang"
-        :allow-fullscreen="false"
+        :readonly="true"
       />
     </n-modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useApiStore } from '@/stores/api';
 import { storeToRefs } from 'pinia';
-import { NButton, NTag, NSpace, NAlert, NSpin, NIcon, NBadge, NModal } from 'naive-ui';
-import { 
-  CodeSlashOutline, 
-  ListOutline, 
-  ServerOutline, 
-  DocumentTextOutline, 
-  GitNetworkOutline 
+import { NButton, NTag, NSpace, NAlert, NSpin, NIcon, NBadge, NModal, NTabs, NTabPane } from 'naive-ui';
+import {
+  CodeSlashOutline,
+  ListOutline,
+  ServerOutline,
+  DocumentTextOutline,
+  GitNetworkOutline
 } from '@vicons/ionicons5';
-import CodeViewer from '@/components/elements/CodeViewer.vue';
+import RequestBodyEditor from '@/components/elements/RequestBodyEditor.vue';
 import { responsesText } from '@/constants';
 
 const apiStore = useApiStore();
 const {
   responseData, responseStatus, responseHeaders, sqlData, logsData,
-  modelsData, timeTaken, requestError, sendingRequest, 
+  modelsData, timeTaken, requestError, sendingRequest,
   selectedRouteDetails, isExampleMode, selectedExampleStatus
 } = storeToRefs(apiStore);
 
+
+// Two-way binding between local tab state and pinia store
+const activeMode = ref(isExampleMode.value ? 'example' : 'live');
+watch(activeMode, (newMode) => {
+  apiStore.setExampleMode(newMode === 'example');
+});
+watch(isExampleMode, (newIsExample) => {
+  activeMode.value = newIsExample ? 'example' : 'live';
+});
+
+
 const exampleResponses = computed(() => {
-  return (selectedRouteDetails.value?.responses || {}) as Record<string, any>;
+  return (apiStore.config?.responses || {}) as Record<string, any>;
 });
 
 const hasExamples = computed(() => {
   return exampleResponses.value && Object.keys(exampleResponses.value).length > 0;
 });
 
+const getSubMethodAndMessage = (httpMethod: string, uri: string) => {
+  const hasId = /\{[^}]+\}/.test(uri); // Check if URI has parameters like {id}
+  switch (httpMethod.toUpperCase()) {
+    case 'GET':
+      return hasId ? { subMethod: 'show', messageKey: 'retrieved', messageText: 'recuperado com sucesso', usePlural: false } : { subMethod: 'index', messageKey: 'retrieved', messageText: 'recuperado com sucesso', usePlural: true };
+    case 'POST':
+      return { subMethod: 'store', messageKey: 'saved', messageText: 'salvo com sucesso', usePlural: false };
+    case 'PUT':
+    case 'PATCH':
+      return { subMethod: 'update', messageKey: 'updated', messageText: 'atualizado com sucesso', usePlural: false };
+    case 'DELETE':
+      return { subMethod: 'destroy', messageKey: 'deleted', messageText: 'deletado com sucesso', usePlural: false };
+    default:
+      return { subMethod: 'index', messageKey: 'retrieved', messageText: 'recuperado com sucesso', usePlural: true };
+  }
+};
+
 const currentExample = computed(() => {
   if (!hasExamples.value) return null;
-  // If selected status is not available, default to the first one (usually 200)
   const examples = exampleResponses.value;
-  if (examples[selectedExampleStatus.value]) {
-    return { status: selectedExampleStatus.value, data: examples[selectedExampleStatus.value] };
+  const status = selectedExampleStatus.value;
+  if (examples[status]) {
+    // Deep copy the object to avoid mutating the original state
+    let data = JSON.parse(JSON.stringify(examples[status]));
+    if (status === 200 && selectedRouteDetails.value) {
+      const { subMethod, usePlural } = getSubMethodAndMessage(selectedRouteDetails.value.http_method, selectedRouteDetails.value.uri);
+      if (data[subMethod]) {
+        data = data[subMethod];
+        // Replace :model with translated model name
+        if (data.message && data.message.includes(':model')) {
+          const modelName = usePlural ? selectedRouteDetails.value.translated_model_plural : selectedRouteDetails.value.translated_model_singular;
+          data.message = data.message.replace(':model', modelName);
+        }
+      }
+    }
+    return { status, data };
   }
   // Fallback to first available
   const firstStatus = Object.keys(examples)[0];
@@ -339,11 +374,6 @@ const modelsCount = computed(() => {
   background: var(--n-color);
 }
 
-.meta-text {
-  font-size: 0.875rem;
-  color: var(--n-text-color-disabled);
-}
-
 .response-content {
   flex: 1;
   min-height: 0;
@@ -365,5 +395,29 @@ const modelsCount = computed(() => {
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--n-text-color);
+}
+
+.response-tabs {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+:deep(.n-tabs-pane-wrapper) {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+:deep(.n-tab-pane) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-top: 1rem;
+}
+
+.tab-pane-content {
+  height: 100%;
 }
 </style>
