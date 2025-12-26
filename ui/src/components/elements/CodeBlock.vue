@@ -1,5 +1,9 @@
 <template>
-  <pre><code class="hljs" :class="language" v-html="highlightedCode"></code></pre>
+  <pre><code
+class="hljs"
+             :class="language"
+v-html="highlightedCode"
+  /></pre>
 </template>
 
 <script setup lang="ts">

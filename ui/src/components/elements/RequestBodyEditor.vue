@@ -1,33 +1,34 @@
 <template>
   <div class="request-body-editor">
     <div class="editor-toolbar">
-      <n-button 
-        size="tiny" 
+      <n-button
+        size="tiny"
         quaternary
-        @click="copyCode"
         class="copy-button"
+        @click="copyCode"
       >
         <template #icon>
           <n-icon><CopyOutline /></n-icon>
         </template>
         Copy
       </n-button>
-      <n-button 
-        size="tiny" 
+      <n-button
+        v-if="!readonly && language === 'json'"
+        size="tiny"
         quaternary
-        @click="formatJson"
         class="format-button"
+        @click="formatJson"
       >
         <template #icon>
           <n-icon><ColorWandOutline /></n-icon>
         </template>
         Format
       </n-button>
-      <n-button 
-        size="tiny" 
+      <n-button
+        size="tiny"
         quaternary
-        @click="$emit('toggle-fullscreen')"
         class="fullscreen-button"
+        @click="$emit('toggle-fullscreen')"
       >
         <template #icon>
           <n-icon><ExpandOutline /></n-icon>
@@ -37,13 +38,21 @@
     </div>
     <div class="editor-wrapper">
       <textarea
-        :value="modelValue"
-        @input="updateValue"
+        ref="editorRef"
+        :value="code"
+        :readonly="readonly"
         class="json-editor"
-        placeholder='{ "key": "value" }'
+        :placeholder="language === 'json' ? '{ &quot;key&quot;: &quot;value&quot; }' : ''"
         spellcheck="false"
+        @input="updateValue"
+        @scroll="syncScroll"
       />
-      <div class="syntax-highlight" :style="{ whiteSpace: 'pre' }" v-html="highlightedCode"></div>
+      <div
+        ref="highlightRef"
+        class="syntax-highlight"
+        :style="{ whiteSpace: 'pre' }"
+        v-html="highlightedCode"
+      />
     </div>
   </div>
 </template>
@@ -55,31 +64,51 @@ import { CopyOutline, ColorWandOutline, ExpandOutline } from '@vicons/ionicons5'
 import { useClipboard } from '@/composables/useClipboard';
 import hljs from 'highlight.js/lib/core';
 import json from 'highlight.js/lib/languages/json';
+import sql from 'highlight.js/lib/languages/sql';
+import typescript from 'highlight.js/lib/languages/typescript';
 
-// Register JSON language
+// Register languages
 hljs.registerLanguage('json', json);
+hljs.registerLanguage('sql', sql);
+hljs.registerLanguage('typescript', typescript);
+hljs.registerLanguage('text', () => ({ name: 'text', contains: [] }));
 
-const props = defineProps<{
-  modelValue: string;
-}>();
+const props = withDefaults(defineProps<{
+  code: string;
+  language?: 'json' | 'sql' | 'typescript' | 'text';
+  readonly?: boolean;
+}>(), {
+  language: 'json',
+  readonly: false,
+});
 
-const emit = defineEmits(['update:modelValue', 'toggle-fullscreen']);
+const emit = defineEmits(['update:code', 'toggle-fullscreen']);
 
 const { copy } = useClipboard();
 
 const highlightedCode = ref('');
+const editorRef = ref<HTMLTextAreaElement | null>(null);
+const highlightRef = ref<HTMLDivElement | null>(null);
+
+const syncScroll = () => {
+  if (editorRef.value && highlightRef.value) {
+    highlightRef.value.scrollTop = editorRef.value.scrollTop;
+    highlightRef.value.scrollLeft = editorRef.value.scrollLeft;
+  }
+};
+
 
 const updateHighlight = () => {
-  if (!props.modelValue) {
+  if (!props.code) {
     highlightedCode.value = '';
     return;
   }
 
   try {
-    const result = hljs.highlight(props.modelValue, { language: 'json' });
+    const result = hljs.highlight(props.code, { language: props.language });
     highlightedCode.value = result.value;
   } catch (e) {
-    highlightedCode.value = escapeHtml(props.modelValue);
+    highlightedCode.value = escapeHtml(props.code);
   }
 };
 
@@ -90,13 +119,13 @@ const escapeHtml = (text: string) => {
 };
 
 const copyCode = () => {
-  copy(props.modelValue);
+  copy(props.code);
 };
 
 const formatJson = () => {
   try {
-    const parsed = JSON.parse(props.modelValue);
-    emit('update:modelValue', JSON.stringify(parsed, null, 2));
+    const parsed = JSON.parse(props.code);
+    emit('update:code', JSON.stringify(parsed, null, 2));
   } catch (e) {
     // Invalid JSON, do nothing
   }
@@ -104,11 +133,11 @@ const formatJson = () => {
 
 const updateValue = (e: Event) => {
   const target = e.target as HTMLTextAreaElement;
-  emit('update:modelValue', target.value);
+  emit('update:code', target.value);
 };
 
 // Watch for value changes
-watch(() => props.modelValue, updateHighlight, { immediate: true });
+watch(() => [props.code, props.language], updateHighlight, { immediate: true });
 </script>
 
 <style scoped>
@@ -182,7 +211,7 @@ watch(() => props.modelValue, updateHighlight, { immediate: true });
   width: 100%;
   height: 100%;
   padding: 1rem;
-  overflow: auto;
+  overflow: hidden;
   pointer-events: none;
   z-index: 1;
   font-family: 'Fira Code', 'Courier New', Monaco, monospace;

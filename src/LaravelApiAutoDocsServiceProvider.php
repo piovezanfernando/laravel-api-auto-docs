@@ -25,6 +25,7 @@ class LaravelApiAutoDocsServiceProvider extends PackageServiceProvider
         // Publish all dist assets to public/api-auto-docs
         $this->publishes([
             __DIR__ . '/../resources/dist' => public_path('api-auto-docs'),
+            __DIR__ . '/../resources/stubs/custom-responses.stub.php' => resource_path('api-docs/custom-responses.php'),
         ], 'laravel-api-auto-docs');
     }
 }

@@ -77,7 +77,7 @@ class Doc implements Arrayable
      *
      * @var string[]
      */
-    private array $responses;
+    private array|null $responses;
 
     /**
      * A list of route path parameters, such as `/users/{id}`.
@@ -95,6 +95,16 @@ class Doc implements Arrayable
      * The group index of the group, determine the ordering.
      */
     private int $groupIndex;
+
+    /**
+     * Translated model singular name.
+     */
+    private string $translatedModelSingular;
+
+    /**
+     * Translated model plural name.
+     */
+    private string $translatedModelPlural;
 
     /**
      * Description list and examples for fields.
@@ -175,15 +185,17 @@ class Doc implements Arrayable
         $this->method             = $method;
         $this->httpMethod         = $httpMethod;
         $this->pathParameters     = $pathParameters;
+        $this->responses          = [];
         $this->rules              = $rules;
         $this->docBlock           = $docBlock;
-        $this->responses          = [];
         $this->examples           = $examples;
         $this->fieldInfo          = $fieldInfo;
         $this->rulesOrder         = $rulesOrder;
         $this->summary            = $summary;
         $this->description        = $description;
         $this->tag                = $tag;
+        $this->translatedModelSingular = '';
+        $this->translatedModelPlural = '';
     }
 
     public function getUri(): string
@@ -248,9 +260,29 @@ class Doc implements Arrayable
         $this->controllerFullPath = $controllerFullPath;
     }
 
+    public function setTranslatedModelSingular(string $translatedModelSingular): void
+    {
+        $this->translatedModelSingular = $translatedModelSingular;
+    }
+
+    public function setTranslatedModelPlural(string $translatedModelPlural): void
+    {
+        $this->translatedModelPlural = $translatedModelPlural;
+    }
+
     public function getMethod(): string
     {
         return $this->method;
+    }
+
+    public function getTranslatedModelSingular(): string
+    {
+        return $this->translatedModelSingular;
+    }
+
+    public function getTranslatedModelPlural(): string
+    {
+        return $this->translatedModelPlural;
     }
 
     public function setMethod(string $method): void
@@ -368,7 +400,7 @@ class Doc implements Arrayable
     /**
      * @param  string[]  $responses
      */
-    public function setResponses(array $responses): void
+    public function setResponses(array|null $responses = null): void
     {
         $this->responses = $responses;
     }
@@ -468,9 +500,9 @@ class Doc implements Arrayable
             'method'               => $this->method,
             'http_method'          => $this->httpMethod,
             'path_parameters'      => $this->pathParameters,
+            'responses'            => $this->responses,
             'rules'                => $this->rules,
             'doc_block'            => $this->docBlock,
-            'responses'            => $this->responses,
             'examples'             => $this->examples,
             'field_info'           => $this->fieldInfo,
             'rules_order'          => $this->rulesOrder,
@@ -484,6 +516,9 @@ class Doc implements Arrayable
         if (isset($this->groupIndex)) {
             $result['group_index'] = $this->groupIndex;
         }
+
+        $result['translated_model_singular'] = $this->translatedModelSingular;
+        $result['translated_model_plural'] = $this->translatedModelPlural;
 
         return $result;
     }

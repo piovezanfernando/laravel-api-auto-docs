@@ -33,17 +33,19 @@ export interface IAPIInfo {
   doc_block: string;
   group: string;
   group_index: number;
-  responses: string[];
+  responses: any;
   examples: IAPIExample;
   field_info: IAPIFieldInfos;
   rules_order: string[];
   tag: string;
+  translated_model_plural?: string;
+  translated_model_singular?: string;
 }
 
 export interface IRouteInfo {
-    id: string;
-    uri: string;
-    methods: string[]; // Methods array for the route (e.g., ["GET"])
+  id: string;
+  uri: string;
+  methods: string[]; // Methods array for the route (e.g., ["GET"])
 }
 
 export interface IGroupedRoutes {

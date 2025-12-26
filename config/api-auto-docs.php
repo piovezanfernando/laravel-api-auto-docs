@@ -6,10 +6,6 @@ return [
     'enabled' => true,
     'debug' => false,
 
-    /*
-    * Route where request docs will be served from laravel app.
-    * localhost:8080/request-docs
-    */
     'url' => 'docs-api',
     'middlewares' => [
         // \Piovezanfernando\LaravelRequestDocs\NotFoundWhenProduction::class,
@@ -38,7 +34,7 @@ return [
         'rules'
     ],
 
-    'default_responses' => [ "200", "400", "401", "403", "404", "405", "422", "429", "500", "503"],
+    'default_responses' => ["200", "400", "401", "403", "404", "405", "422", "429", "500", "503"],
 
     // changes default headers on first load for Set Global Headers
     // Later the local storage is used when edits are made
@@ -76,84 +72,76 @@ return [
         // for now putting default responses for all. This can be changed later based on specific needs
         'responses' => [
             '200' => [
-                'description' => 'Successful operation',
-                'content' => [
-                    'application/json' => [
-                        'schema' => [
-                            'type' => 'object',
-                        ],
+                'index' => [
+                    'success' => true,
+                    'data' => [':value'],
+                    'message' => 'messages.retrieved',
+                    'meta' => [
+                        'current_page' => 1,
+                        'from' => 1,
+                        'to' => 15,
+                        'per_page' => 15,
+                        'last_page' => 10,
+                        'total' => 150,
                     ],
+                    'links' => [
+                        'first' => '__url__?page=1',
+                        'last' => '__url__?page=__last_page__',
+                        'prev' => null,
+                        'next' => '__url__?page=2',
+                    ],
+                ],
+                'show' => [
+                    'success' => true,
+                    'data' => ':value',
+                    'message' => 'messages.retrieved',
+                ],
+                'store' => [
+                    'success' => true,
+                    'data' => ':value',
+                    'message' => 'messages.saved',
+                ],
+
+                'update' => [
+                    'success' => true,
+                    'data' => ':value',
+                    'message' => 'messages.updated',
+                ],
+
+                'destroy' => [
+                    'success' => true,
+                    'message' => 'messages.deleted',
                 ],
             ],
             '400' => [
-                'description' => 'Bad Request',
-                'content' => [
-                    'application/json' => [
-                        'schema' => [
-                            'type' => 'object',
-                        ],
-                    ],
-                ],
+                'success' => false,
+                'message' => 'Requisição inválida',
+                'data' => [],
             ],
             '401' => [
-                'description' => 'Unauthorized',
-                'content' => [
-                    'application/json' => [
-                        'schema' => [
-                            'type' => 'object',
-                        ],
-                    ],
-                ],
+                'success' => false,
+                'message' => 'Não autenticado',
+                'data' => [],
             ],
             '403' => [
-                'description' => 'Forbidden',
-                'content' => [
-                    'application/json' => [
-                        'schema' => [
-                            'type' => 'object',
-                        ],
-                    ],
-                ],
+                'success' => false,
+                'message' => 'Acesso negado',
+                'data' => [],
             ],
             '404' => [
-                'description' => 'Not Found',
-                'content' => [
-                    'application/json' => [
-                        'schema' => [
-                            'type' => 'object',
-                        ],
-                    ],
-                ],
+                'success' => false,
+                'message' => 'Recurso não encontrado',
+                'data' => [],
             ],
             '422' => [
-                'description' => 'Unprocessable Entity',
-                'content' => [
-                    'application/json' => [
-                        'schema' => [
-                            'type' => 'object',
-                        ],
-                    ],
-                ],
+                'success' => false,
+                'message' => 'Validação de dados',
+                'data' => [],
             ],
             '500' => [
-                'description' => 'Internal Server Error',
-                'content' => [
-                    'application/json' => [
-                        'schema' => [
-                            'type' => 'object',
-                        ],
-                    ],
-                ],
-            ],
-            'default' => [
-                'description' => 'Unexpected error',
-                'content' => [
-                    'application/json' => [
-                        'schema' => [
-                            'type' => 'object',
-                        ],
-                    ],
-                ],
+                'success' => false,
+                'message' => 'Erro interno do servidor',
+                'data' => [],
             ],
         ],
         //openapi export with security configuration,

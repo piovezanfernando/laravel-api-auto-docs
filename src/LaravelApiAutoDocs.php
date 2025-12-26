@@ -9,6 +9,7 @@ use Illuminate\Routing\Route as IlluminateRoute;
 use Illuminate\Support\Str;
 use phpDocumentor\Reflection\DocBlockFactory;
 use phpDocumentor\Reflection\DocBlockFactoryInterface;
+use Piovezanfernando\LaravelApiAutoDocs\Support\ResponseGenerator;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
@@ -19,10 +20,14 @@ class LaravelApiAutoDocs
 {
     private RoutePath $routePath;
     private DocBlockFactoryInterface $documentator;
+    private ResponseGenerator $responseGenerator;
 
-    public function __construct(RoutePath $routePath)
-    {
-        $this->routePath    = $routePath;
+    public function __construct(
+        RoutePath $routePath,
+        ResponseGenerator $responseGenerator
+    ) {
+        $this->routePath = $routePath;
+        $this->responseGenerator = $responseGenerator;
         $this->documentator = DocBlockFactory::createInstance();
     }
 
@@ -41,13 +46,13 @@ class LaravelApiAutoDocs
         bool $showHead
     ): Collection {
         $filteredMethods = array_filter([
-            Request::METHOD_GET    => $showGet,
-            Request::METHOD_POST   => $showPost,
-            Request::METHOD_PUT    => $showPut,
-            Request::METHOD_PATCH  => $showPatch,
+            Request::METHOD_GET => $showGet,
+            Request::METHOD_POST => $showPost,
+            Request::METHOD_PUT => $showPut,
+            Request::METHOD_PATCH => $showPatch,
             Request::METHOD_DELETE => $showDelete,
-            Request::METHOD_HEAD   => $showHead,
-        ], static fn (bool $shouldShow) => $shouldShow);
+            Request::METHOD_HEAD => $showHead,
+        ], static fn(bool $shouldShow) => $shouldShow);
 
         $methods = array_keys($filteredMethods);
 
@@ -62,10 +67,10 @@ class LaravelApiAutoDocs
      * This avoids loading all application routes for a single detail view.
      *
      * @param string $id
-     * @return array|null
+     * @return Doc|null
      * @throws \ReflectionException
      */
-    public function getDocById(string $id): ?array
+    public function getDocById(string $id): ?Doc
     {
         $routes = Route::getRoutes()->getRoutes();
         $onlyRouteStartWith = config('api-auto-docs.only_route_uri_start_with') ?? '';
@@ -73,13 +78,13 @@ class LaravelApiAutoDocs
 
         // We need to know which methods are allowed in general, to calculate the ID correctly
         $allowedMethods = array_keys(array_filter([
-            Request::METHOD_GET    => config('api-auto-docs.show_get', true),
-            Request::METHOD_POST   => config('api-auto-docs.show_post', true),
-            Request::METHOD_PUT    => config('api-auto-docs.show_put', true),
-            Request::METHOD_PATCH  => config('api-auto-docs.show_patch', true),
+            Request::METHOD_GET => config('api-auto-docs.show_get', true),
+            Request::METHOD_POST => config('api-auto-docs.show_post', true),
+            Request::METHOD_PUT => config('api-auto-docs.show_put', true),
+            Request::METHOD_PATCH => config('api-auto-docs.show_patch', true),
             Request::METHOD_DELETE => config('api-auto-docs.show_delete', true),
-            Request::METHOD_HEAD   => config('api-auto-docs.show_head', true),
-        ], static fn (bool $shouldShow) => $shouldShow));
+            Request::METHOD_HEAD => config('api-auto-docs.show_head', true),
+        ], static fn(bool $shouldShow) => $shouldShow));
 
         foreach ($routes as $route) {
             // Apply the same filtering logic as in getControllersInfo
@@ -105,15 +110,63 @@ class LaravelApiAutoDocs
                 if ($currentId === $id) {
                     // Found the specific route and method.
                     $doc = $this->createDocFromRoute($route, $routeMethods);
+                    $doc->setResponses($this->responseGenerator->generate($route));
 
                     // Set the specific method for this doc, similar to splitByMethods()
                     $doc->setHttpMethod($method);
                     $doc->setMethods([$method]);
 
                     // The appendRequestRules method expects a collection and returns one.
-                    $processedDoc = $this->appendRequestRules(collect([$doc]))->first();
+                    return $this->appendRequestRules(collect([$doc]))->first();
+                }
+            }
+        }
 
-                    return $processedDoc?->toArray();
+        return null;
+    }
+
+    /**
+     * Finds and returns a Route object by its generated ID.
+     *
+     * @param string $id
+     * @return IlluminateRoute|null
+     */
+    public function getRouteById(string $id): ?IlluminateRoute
+    {
+        $routes = Route::getRoutes()->getRoutes();
+        $onlyRouteStartWith = config('api-auto-docs.only_route_uri_start_with') ?? '';
+        $excludePatterns = config('api-auto-docs.hide_matching') ?? [];
+
+        $allowedMethods = array_keys(array_filter([
+            Request::METHOD_GET => config('api-auto-docs.show_get', true),
+            Request::METHOD_POST => config('api-auto-docs.show_post', true),
+            Request::METHOD_PUT => config('api-auto-docs.show_put', true),
+            Request::METHOD_PATCH => config('api-auto-docs.show_patch', true),
+            Request::METHOD_DELETE => config('api-auto-docs.show_delete', true),
+            Request::METHOD_HEAD => config('api-auto-docs.show_head', true),
+        ], static fn(bool $shouldShow) => $shouldShow));
+
+        foreach ($routes as $route) {
+            if ($onlyRouteStartWith && !Str::startsWith($route->uri, $onlyRouteStartWith)) {
+                continue;
+            }
+
+            foreach ($excludePatterns as $regex) {
+                if (preg_match($regex, $route->uri)) {
+                    continue 2;
+                }
+            }
+
+            $routeMethods = array_intersect($route->methods, $allowedMethods);
+
+            if (count($routeMethods) === 0) {
+                continue;
+            }
+
+            foreach ($routeMethods as $method) {
+                $currentId = md5($route->uri . ':' . $method);
+                if ($currentId === $id) {
+                    return $route;
                 }
             }
         }
@@ -169,7 +222,7 @@ class LaravelApiAutoDocs
             Request::METHOD_HEAD,
         ];
 
-        $sorted = $docs->sortBy(static fn (Doc $doc) => array_search($doc->getHttpMethod(), $methods), SORT_NUMERIC);
+        $sorted = $docs->sortBy(static fn(Doc $doc) => array_search($doc->getHttpMethod(), $methods), SORT_NUMERIC);
 
         return $sorted->values();
     }
@@ -196,7 +249,7 @@ class LaravelApiAutoDocs
         }
 
         return $docs
-            ->sortBy(static fn (Doc $doc) => $doc->getGroup() . $doc->getGroupIndex(), SORT_NATURAL)
+            ->sortBy(static fn(Doc $doc) => $doc->getGroup() . $doc->getGroupIndex(), SORT_NATURAL)
             ->values();
     }
 
@@ -216,7 +269,7 @@ class LaravelApiAutoDocs
         $routes = Route::getRoutes()->getRoutes();
 
         $onlyRouteStartWith = config('api-auto-docs.only_route_uri_start_with') ?? '';
-        $excludePatterns    = config('api-auto-docs.hide_matching') ?? [];
+        $excludePatterns = config('api-auto-docs.hide_matching') ?? [];
 
         foreach ($routes as $route) {
             if ($onlyRouteStartWith && !Str::startsWith($route->uri, $onlyRouteStartWith)) {
@@ -272,18 +325,18 @@ class LaravelApiAutoDocs
                 foreach ($controllerReflectionMethod->getParameters() as $param) {
                     /** @var \ReflectionNamedType|\ReflectionUnionType|\ReflectionIntersectionType|null $namedType */
                     $namedType = $param->getType();
-                    if (! $namedType) {
+                    if (!$namedType) {
                         continue;
                     }
 
                     try {
-                        if (! method_exists($namedType, 'getName')) {
+                        if (!method_exists($namedType, 'getName')) {
                             continue;
                         }
 
                         $requestClassName = $namedType->getName();
 
-                        if (! class_exists($requestClassName)) {
+                        if (!class_exists($requestClassName)) {
                             continue;
                         }
 
@@ -296,7 +349,7 @@ class LaravelApiAutoDocs
                         }
 
                         foreach (config('api-auto-docs.rules_methods') as $requestMethod) {
-                            if (! method_exists($requestObject, $requestMethod)) {
+                            if (!method_exists($requestObject, $requestMethod)) {
                                 continue;
                             }
 
@@ -329,7 +382,7 @@ class LaravelApiAutoDocs
     public function appendExample(Doc $doc): void
     {
         try {
-            $modelName       = preg_replace(
+            $modelName = preg_replace(
                 config('api-auto-docs.pattern_model_from_controller_name'),
                 '',
                 class_basename($doc->getController())
@@ -341,10 +394,10 @@ class LaravelApiAutoDocs
             }
 
             /** @var \Illuminate\Database\Eloquent\Factories\Factory $factory */
-            $factory       = app($fullFactoryName);
+            $factory = app($fullFactoryName);
             $excludeFields = config('api-auto-docs.exclude_fields') ?? [];
-            $example       = $factory::new()->make()->toArray();
-            $example       = array_filter(
+            $example = $factory::new()->make()->toArray();
+            $example = array_filter(
                 $example,
                 fn($key) => !in_array($key, $excludeFields),
                 ARRAY_FILTER_USE_KEY
@@ -420,7 +473,7 @@ class LaravelApiAutoDocs
      */
     public function rulesByRegex(string $requestClassName, string $methodName): array
     {
-        $data  = new ReflectionMethod($requestClassName, $methodName);
+        $data = new ReflectionMethod($requestClassName, $methodName);
         $lines = file((string) $data->getFileName());
 
         if ($lines === false) {
@@ -447,15 +500,15 @@ class LaravelApiAutoDocs
         }
 
         return collect($rules)
-            ->filter(static fn ($item) => count($item[0]) > 0)
+            ->filter(static fn($item) => count($item[0]) > 0)
             ->map(static function (array $item) {
-                $fieldName         = Str::of($item[0][0])->replace(['"', "'"], '');
-                $definedFieldRules = collect(array_slice($item[0], 1))->transform(static fn ($rule) => Str::of($rule)->replace(['"', "'"], '')->__toString())->toArray();
+                $fieldName = Str::of($item[0][0])->replace(['"', "'"], '');
+                $definedFieldRules = collect(array_slice($item[0], 1))->transform(static fn($rule) => Str::of($rule)->replace(['"', "'"], '')->__toString())->toArray();
 
                 return ['key' => $fieldName, 'rules' => $definedFieldRules];
             })
             ->keyBy('key')
-            ->map(static fn ($item) => $item['rules'])
+            ->map(static fn($item) => $item['rules'])
             ->toArray();
     }
 
@@ -567,22 +620,22 @@ class LaravelApiAutoDocs
      */
     private function createDocFromRoute(IlluminateRoute $route, array $routeMethods): Doc
     {
-        $controllerName     = '';
+        $controllerName = '';
         $controllerFullPath = '';
-        $method             = '';
-        $tag                = '';
+        $method = '';
+        $tag = '';
 
         // `$route->action['uses']` value is either 'Class@method' string or Closure.
         if (is_string($route->action['uses']) && !RouteAction::containsSerializedClosure($route->action)) {
             /** @var array{0: class-string<\Illuminate\Routing\Controller>, 1: string} $controllerCallback */
             $controllerCallback = Str::parseCallback($route->action['uses']);
             $controllerFullPath = $controllerCallback[0];
-            $method             = $controllerCallback[1];
-            $controllerName     = (new ReflectionClass($controllerFullPath))->getShortName();
+            $method = $controllerCallback[1];
+            $controllerName = (new ReflectionClass($controllerFullPath))->getShortName();
         }
 
         $pathParameters = [];
-        $pp             = $this->routePath->getPathParameters($route);
+        $pp = $this->routePath->getPathParameters($route);
 
         // same format as rules
         foreach ($pp as $k => $v) {
@@ -592,7 +645,7 @@ class LaravelApiAutoDocs
         /** @var string[] $middlewares */
         $middlewares = $route->middleware();
 
-        return new Doc(
+        $doc = new Doc(
             $route->uri,
             $routeMethods,
             config('api-auto-docs.hide_meta_data') ? [] : $middlewares,
@@ -610,5 +663,31 @@ class LaravelApiAutoDocs
             '',
             $tag
         );
+
+        $modelName = preg_replace(config('api-auto-docs.pattern_model_from_controller_name'), '', $controllerName);
+        $translateName = Str::snake(Str::plural(class_basename($modelName)));
+
+        $doc->setTranslatedModelSingular(__('models/' . $translateName . '.singular'));
+        $doc->setTranslatedModelPlural(__('models/' . $translateName . '.plural'));
+
+        return $doc;
+    }
+
+    public function replaceTranslate(?array $response = null): array
+    {
+        if ($response === null) {
+            $response = config('api-auto-docs.open_api.responses', []);
+        }
+
+        $prefix = config('api-responses.translation_prefix', 'messages.');
+
+        foreach ($response as $key => $value) {
+            if (is_string($value) && str_starts_with($value, $prefix)) {
+                $response[$key] = __($value);
+            } elseif (is_array($value)) {
+                $response[$key] = $this->replaceTranslate($value);
+            }
+        }
+        return $response;
     }
 }
