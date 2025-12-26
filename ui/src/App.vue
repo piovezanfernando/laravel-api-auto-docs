@@ -1,32 +1,42 @@
 <template>
-  <n-config-provider :theme="currentTheme" :theme-overrides="currentThemeOverrides">
+  <n-config-provider
+    :theme="currentTheme"
+    :theme-overrides="currentThemeOverrides"
+  >
     <n-message-provider>
       <n-notification-provider>
         <n-global-style />
         <div class="h-screen flex flex-column">
-          <TopNavbar @open-search="isSearchVisible = true" @toggle-theme="toggleTheme" :is-dark="isDark" />
-          <n-split 
-            direction="horizontal" 
+          <TopNavbar
+            :is-dark="isDark"
+            @open-search="isSearchVisible = true"
+            @toggle-theme="toggleTheme"
+          />
+          <n-split
+            direction="horizontal"
             :default-size="0.2"
             :min="0.1"
             :max="0.4"
             style="height: calc(100vh - 4rem)"
           >
             <template #1>
-              <SidebarMenu ref="sidebarRef" class="w-full h-full"/>
+              <SidebarMenu
+                ref="sidebarRef"
+                class="w-full h-full"
+              />
             </template>
             <template #2>
-              <n-split 
+              <n-split
                 direction="vertical"
                 :default-size="0.5"
                 :min="0.2"
                 :max="0.8"
               >
                 <template #1>
-                  <RequestPanel class="w-full h-full"/>
+                  <RequestPanel class="w-full h-full" />
                 </template>
                 <template #2>
-                  <ResponsePanel class="w-full h-full"/>
+                  <ResponsePanel class="w-full h-full" />
                 </template>
               </n-split>
             </template>

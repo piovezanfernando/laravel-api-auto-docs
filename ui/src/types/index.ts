@@ -33,12 +33,13 @@ export interface IAPIInfo {
   doc_block: string;
   group: string;
   group_index: number;
-  responses: string[];
+  responses: any;
   examples: IAPIExample;
   field_info: IAPIFieldInfos;
   rules_order: string[];
   tag: string;
-  exampleResponses?: Record<number, any>;
+  translated_model_plural?: string;
+  translated_model_singular?: string;
 }
 
 export interface IRouteInfo {

@@ -185,7 +185,7 @@ export const useApiStore = defineStore('api', () => {
       }
       parsedHeaders['X-Auto-Doc'] = true;
 
-      let requestBodyContent: any = method.match(/GET|HEAD/) ? undefined : body;
+      const requestBodyContent: any = method.match(/GET|HEAD/) ? undefined : body;
 
       const startTime = performance.now();
       const response = await fetch(fullUrl, {

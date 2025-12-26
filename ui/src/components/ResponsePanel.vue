@@ -8,19 +8,39 @@
       pane-class="response-tab-pane"
       :tabs-padding="20"
     >
-      <n-tab-pane name="live" tab="Live">
-        <div v-if="sendingRequest" class="flex-center tab-pane-content">
+      <n-tab-pane
+        name="live"
+        tab="Live"
+      >
+        <div
+          v-if="sendingRequest"
+          class="flex-center tab-pane-content"
+        >
           <n-spin size="large" />
         </div>
-        <div v-else-if="requestError" class="p-3 tab-pane-content">
-          <n-alert type="error" :closable="false">
+        <div
+          v-else-if="requestError"
+          class="p-3 tab-pane-content"
+        >
+          <n-alert
+            type="error"
+            :closable="false"
+          >
             {{ requestError }}
           </n-alert>
         </div>
-        <div v-else-if="responseStatus === 0" class="flex-center tab-pane-content">
-          <h3 class="empty-state">Send a request to see the response</h3>
+        <div
+          v-else-if="responseStatus === 0"
+          class="flex-center tab-pane-content"
+        >
+          <h3 class="empty-state">
+            Send a request to see the response
+          </h3>
         </div>
-        <div v-else class="flex flex-column h-full">
+        <div
+          v-else
+          class="flex flex-column h-full"
+        >
           <!-- Toolbar -->
           <div class="response-toolbar">
             <n-space>
@@ -43,7 +63,12 @@
                   <n-icon><ListOutline /></n-icon>
                 </template>
                 Headers
-                <n-badge v-if="headersCount !== null" :value="headersCount" :type="headersCount === 0 ? 'error' : 'info'" class="ml-1" />
+                <n-badge
+                  v-if="headersCount !== null"
+                  :value="headersCount"
+                  :type="headersCount === 0 ? 'error' : 'info'"
+                  class="ml-1"
+                />
               </n-button>
               <n-button
                 :type="currentTab === 'sql' ? 'primary' : 'default'"
@@ -54,7 +79,12 @@
                   <n-icon><ServerOutline /></n-icon>
                 </template>
                 SQL
-                <n-badge v-if="sqlCount !== null" :value="sqlCount" :type="sqlCount === 0 ? 'error' : 'info'" class="ml-1" />
+                <n-badge
+                  v-if="sqlCount !== null"
+                  :value="sqlCount"
+                  :type="sqlCount === 0 ? 'error' : 'info'"
+                  class="ml-1"
+                />
               </n-button>
               <n-button
                 :type="currentTab === 'logs' ? 'primary' : 'default'"
@@ -65,7 +95,12 @@
                   <n-icon><DocumentTextOutline /></n-icon>
                 </template>
                 Logs
-                <n-badge v-if="logsCount !== null" :value="logsCount" :type="logsCount === 0 ? 'error' : 'info'" class="ml-1" />
+                <n-badge
+                  v-if="logsCount !== null"
+                  :value="logsCount"
+                  :type="logsCount === 0 ? 'error' : 'info'"
+                  class="ml-1"
+                />
               </n-button>
               <n-button
                 :type="currentTab === 'models' ? 'primary' : 'default'"
@@ -76,7 +111,12 @@
                   <n-icon><GitNetworkOutline /></n-icon>
                 </template>
                 Models
-                <n-badge v-if="modelsCount !== null" :value="modelsCount" :type="modelsCount === 0 ? 'error' : 'info'" class="ml-1" />
+                <n-badge
+                  v-if="modelsCount !== null"
+                  :value="modelsCount"
+                  :type="modelsCount === 0 ? 'error' : 'info'"
+                  class="ml-1"
+                />
               </n-button>
             </n-space>
           </div>
@@ -122,15 +162,34 @@
         </div>
       </n-tab-pane>
 
-      <n-tab-pane name="example" tab="Example">
-        <div v-if="!selectedRouteDetails" class="flex-center tab-pane-content">
-          <h3 class="empty-state">Select a route to see examples</h3>
+      <n-tab-pane
+        name="example"
+        tab="Example"
+      >
+        <div
+          v-if="!selectedRouteDetails"
+          class="flex-center tab-pane-content"
+        >
+          <h3 class="empty-state">
+            Select a route to see examples
+          </h3>
         </div>
-        <div v-else>
-          <div v-if="!hasExamples" class="flex-center tab-pane-content">
-            <h3 class="empty-state">No example responses configured for this route</h3>
+        <div
+          v-else
+          class="h-full flex flex-column"
+        >
+          <div
+            v-if="!hasExamples"
+            class="flex-center tab-pane-content"
+          >
+            <h3 class="empty-state">
+              No example responses configured for this route
+            </h3>
           </div>
-          <div v-else class="flex flex-column h-full">
+          <div
+            v-else
+            class="flex flex-column h-full"
+          >
             <div class="example-selector">
               <span class="selector-label">Example Response:</span>
               <n-space>
@@ -146,7 +205,10 @@
                 </n-button>
               </n-space>
             </div>
-            <div v-if="currentExample" class="response-content">
+            <div
+              v-if="currentExample"
+              class="response-content"
+            >
               <RequestBodyEditor
                 :code="JSON.stringify(currentExample.data, null, 2)"
                 language="json"
@@ -180,7 +242,7 @@
 import { computed, ref, watch } from 'vue';
 import { useApiStore } from '@/stores/api';
 import { storeToRefs } from 'pinia';
-import { NButton, NTag, NSpace, NAlert, NSpin, NIcon, NBadge, NModal, NTabs, NTabPane } from 'naive-ui';
+import { NButton, NSpace, NAlert, NSpin, NIcon, NBadge, NModal, NTabs, NTabPane } from 'naive-ui';
 import {
   CodeSlashOutline,
   ListOutline,
@@ -189,12 +251,11 @@ import {
   GitNetworkOutline
 } from '@vicons/ionicons5';
 import RequestBodyEditor from '@/components/elements/RequestBodyEditor.vue';
-import { responsesText } from '@/constants';
 
 const apiStore = useApiStore();
 const {
   responseData, responseStatus, responseHeaders, sqlData, logsData,
-  modelsData, timeTaken, requestError, sendingRequest,
+  modelsData, requestError, sendingRequest,
   selectedRouteDetails, isExampleMode, selectedExampleStatus
 } = storeToRefs(apiStore);
 
@@ -250,6 +311,14 @@ const currentExample = computed(() => {
           const modelName = usePlural ? selectedRouteDetails.value.translated_model_plural : selectedRouteDetails.value.translated_model_singular;
           data.message = data.message.replace(':model', modelName);
         }
+
+        if (data.data && data.data === ':value' && selectedRouteDetails.value.responses) {
+          data.data = selectedRouteDetails.value.responses;
+        }
+
+        if (data.data[0] && data.data[0] === ':value' && selectedRouteDetails.value.responses) {
+          data.data[0] = selectedRouteDetails.value.responses;
+        }
       }
     }
     return { status, data };
@@ -285,23 +354,6 @@ const openFullscreen = (code: string, lang: 'json' | 'sql' | 'text', title: stri
   showFullscreen.value = true;
 };
 
-const responseStatusText = computed(() => responsesText[responseStatus.value.toString()] || "");
-
-const responseTagType = computed(() => {
-  const status = responseStatus.value;
-  if (status >= 200 && status < 300) return 'success';
-  if (status >= 400 && status < 500) return 'warning';
-  if (status >= 500) return 'error';
-  return 'info';
-});
-
-const responseSize = computed(() => {
-  const bytes = responseData.value.length;
-  if (bytes < 1024) return `${bytes} bytes`;
-  return `${(bytes / 1024).toFixed(1)} KB`;
-});
-
-const roundedTime = computed(() => Math.round(timeTaken.value));
 
 // Count items for badges
 const headersCount = computed(() => {

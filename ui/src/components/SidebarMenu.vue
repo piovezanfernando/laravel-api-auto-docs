@@ -1,13 +1,26 @@
 <template>
   <div class="h-full flex flex-column">
-    <div class="flex-grow overflow-auto no-scrollbar" ref="scrollContainer">
-      <div v-if="isLoadingRoutes" class="flex justify-content-center align-items-center h-full">
+    <div
+      ref="scrollContainer"
+      class="flex-grow overflow-auto no-scrollbar"
+    >
+      <div
+        v-if="isLoadingRoutes"
+        class="flex justify-content-center align-items-center h-full"
+      >
         <n-spin size="medium" />
       </div>
-      <div v-else-if="filteredAndSortedRoutes.length === 0" class="text-center p-5" style="color: var(--n-text-color-disabled);">
+      <div
+        v-else-if="filteredAndSortedRoutes.length === 0"
+        class="text-center p-5"
+        style="color: var(--n-text-color-disabled);"
+      >
         No routes found.
       </div>
-      <n-collapse v-else v-model:expanded-names="expandedGroupNames">
+      <n-collapse
+        v-else
+        v-model:expanded-names="expandedGroupNames"
+      >
         <n-collapse-item 
           v-for="group in filteredAndSortedRoutes" 
           :key="group.group" 

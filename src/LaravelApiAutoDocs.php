@@ -9,6 +9,7 @@ use Illuminate\Routing\Route as IlluminateRoute;
 use Illuminate\Support\Str;
 use phpDocumentor\Reflection\DocBlockFactory;
 use phpDocumentor\Reflection\DocBlockFactoryInterface;
+use Piovezanfernando\LaravelApiAutoDocs\Support\ResponseGenerator;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
@@ -19,10 +20,14 @@ class LaravelApiAutoDocs
 {
     private RoutePath $routePath;
     private DocBlockFactoryInterface $documentator;
+    private ResponseGenerator $responseGenerator;
 
-    public function __construct(RoutePath $routePath)
-    {
+    public function __construct(
+        RoutePath $routePath,
+        ResponseGenerator $responseGenerator
+    ) {
         $this->routePath = $routePath;
+        $this->responseGenerator = $responseGenerator;
         $this->documentator = DocBlockFactory::createInstance();
     }
 
@@ -62,10 +67,10 @@ class LaravelApiAutoDocs
      * This avoids loading all application routes for a single detail view.
      *
      * @param string $id
-     * @return array|null
+     * @return Doc|null
      * @throws \ReflectionException
      */
-    public function getDocById(string $id): ?array
+    public function getDocById(string $id): ?Doc
     {
         $routes = Route::getRoutes()->getRoutes();
         $onlyRouteStartWith = config('api-auto-docs.only_route_uri_start_with') ?? '';
@@ -105,15 +110,63 @@ class LaravelApiAutoDocs
                 if ($currentId === $id) {
                     // Found the specific route and method.
                     $doc = $this->createDocFromRoute($route, $routeMethods);
+                    $doc->setResponses($this->responseGenerator->generate($route));
 
                     // Set the specific method for this doc, similar to splitByMethods()
                     $doc->setHttpMethod($method);
                     $doc->setMethods([$method]);
 
                     // The appendRequestRules method expects a collection and returns one.
-                    $processedDoc = $this->appendRequestRules(collect([$doc]))->first();
+                    return $this->appendRequestRules(collect([$doc]))->first();
+                }
+            }
+        }
 
-                    return $processedDoc?->toArray();
+        return null;
+    }
+
+    /**
+     * Finds and returns a Route object by its generated ID.
+     *
+     * @param string $id
+     * @return IlluminateRoute|null
+     */
+    public function getRouteById(string $id): ?IlluminateRoute
+    {
+        $routes = Route::getRoutes()->getRoutes();
+        $onlyRouteStartWith = config('api-auto-docs.only_route_uri_start_with') ?? '';
+        $excludePatterns = config('api-auto-docs.hide_matching') ?? [];
+
+        $allowedMethods = array_keys(array_filter([
+            Request::METHOD_GET => config('api-auto-docs.show_get', true),
+            Request::METHOD_POST => config('api-auto-docs.show_post', true),
+            Request::METHOD_PUT => config('api-auto-docs.show_put', true),
+            Request::METHOD_PATCH => config('api-auto-docs.show_patch', true),
+            Request::METHOD_DELETE => config('api-auto-docs.show_delete', true),
+            Request::METHOD_HEAD => config('api-auto-docs.show_head', true),
+        ], static fn(bool $shouldShow) => $shouldShow));
+
+        foreach ($routes as $route) {
+            if ($onlyRouteStartWith && !Str::startsWith($route->uri, $onlyRouteStartWith)) {
+                continue;
+            }
+
+            foreach ($excludePatterns as $regex) {
+                if (preg_match($regex, $route->uri)) {
+                    continue 2;
+                }
+            }
+
+            $routeMethods = array_intersect($route->methods, $allowedMethods);
+
+            if (count($routeMethods) === 0) {
+                continue;
+            }
+
+            foreach ($routeMethods as $method) {
+                $currentId = md5($route->uri . ':' . $method);
+                if ($currentId === $id) {
+                    return $route;
                 }
             }
         }

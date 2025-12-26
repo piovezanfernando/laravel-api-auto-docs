@@ -74,7 +74,7 @@ return [
             '200' => [
                 'index' => [
                     'success' => true,
-                    'data' => ':value',
+                    'data' => [':value'],
                     'message' => 'messages.retrieved',
                     'meta' => [
                         'current_page' => 1,

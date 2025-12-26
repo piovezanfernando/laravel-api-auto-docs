@@ -19,7 +19,10 @@
     </n-input>
     
     <div class="results-panel">
-      <div v-if="searchResults.length === 0 && searchText" class="empty-results">
+      <div
+        v-if="searchResults.length === 0 && searchText"
+        class="empty-results"
+      >
         No results found.
       </div>
       <div 

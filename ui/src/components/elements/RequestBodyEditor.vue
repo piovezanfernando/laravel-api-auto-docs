@@ -4,8 +4,8 @@
       <n-button
         size="tiny"
         quaternary
-        @click="copyCode"
         class="copy-button"
+        @click="copyCode"
       >
         <template #icon>
           <n-icon><CopyOutline /></n-icon>
@@ -16,8 +16,8 @@
         v-if="!readonly && language === 'json'"
         size="tiny"
         quaternary
-        @click="formatJson"
         class="format-button"
+        @click="formatJson"
       >
         <template #icon>
           <n-icon><ColorWandOutline /></n-icon>
@@ -27,8 +27,8 @@
       <n-button
         size="tiny"
         quaternary
-        @click="$emit('toggle-fullscreen')"
         class="fullscreen-button"
+        @click="$emit('toggle-fullscreen')"
       >
         <template #icon>
           <n-icon><ExpandOutline /></n-icon>
@@ -38,14 +38,21 @@
     </div>
     <div class="editor-wrapper">
       <textarea
+        ref="editorRef"
         :value="code"
-        @input="updateValue"
         :readonly="readonly"
         class="json-editor"
         :placeholder="language === 'json' ? '{ &quot;key&quot;: &quot;value&quot; }' : ''"
         spellcheck="false"
+        @input="updateValue"
+        @scroll="syncScroll"
       />
-      <div class="syntax-highlight" :style="{ whiteSpace: 'pre' }" v-html="highlightedCode"></div>
+      <div
+        ref="highlightRef"
+        class="syntax-highlight"
+        :style="{ whiteSpace: 'pre' }"
+        v-html="highlightedCode"
+      />
     </div>
   </div>
 </template>
@@ -80,6 +87,16 @@ const emit = defineEmits(['update:code', 'toggle-fullscreen']);
 const { copy } = useClipboard();
 
 const highlightedCode = ref('');
+const editorRef = ref<HTMLTextAreaElement | null>(null);
+const highlightRef = ref<HTMLDivElement | null>(null);
+
+const syncScroll = () => {
+  if (editorRef.value && highlightRef.value) {
+    highlightRef.value.scrollTop = editorRef.value.scrollTop;
+    highlightRef.value.scrollLeft = editorRef.value.scrollLeft;
+  }
+};
+
 
 const updateHighlight = () => {
   if (!props.code) {
@@ -194,7 +211,7 @@ watch(() => [props.code, props.language], updateHighlight, { immediate: true });
   width: 100%;
   height: 100%;
   padding: 1rem;
-  overflow: auto;
+  overflow: hidden;
   pointer-events: none;
   z-index: 1;
   font-family: 'Fira Code', 'Courier New', Monaco, monospace;

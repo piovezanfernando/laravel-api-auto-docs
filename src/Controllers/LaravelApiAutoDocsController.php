@@ -46,8 +46,6 @@ class LaravelApiAutoDocsController extends Controller
             $showHead,
         );
 
-        // Loop and split Doc by the `methods` property.
-        // `Route::match([...n], 'uri', ...)` will generate n number of Doc.
         $docs = $this->laravelApiAutoDocs->splitByMethods($docs);
         $docs = $this->laravelApiAutoDocs->sortDocs($docs, $request->input('sort'));
         $docs = $this->laravelApiAutoDocs->groupDocs($docs, $request->input('groupby'));
@@ -55,7 +53,7 @@ class LaravelApiAutoDocsController extends Controller
         if ($request->input('openapi')) {
             return response()->json(
                 $this->laravelRequestDocsToOpenApi->openApi($docs->all())->toArray(),
-                Response::HTTP_OK,
+                ResponseAlias::HTTP_OK,
                 [
                     'Content-type' => 'application/json; charset=utf-8',
                 ],
@@ -65,7 +63,7 @@ class LaravelApiAutoDocsController extends Controller
 
         return response()->json(
             $docs,
-            Response::HTTP_OK,
+            ResponseAlias::HTTP_OK,
             [
                 'Content-type' => 'application/json; charset=utf-8',
             ],
@@ -96,8 +94,6 @@ class LaravelApiAutoDocsController extends Controller
         if (! $routeDoc) {
             return response()->json(['message' => 'Route not found.'], 404);
         }
-
-        $routeDoc['id'] = $id;
 
         return response()->json(
             $routeDoc,

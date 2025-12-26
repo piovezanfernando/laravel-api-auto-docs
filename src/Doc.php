@@ -77,7 +77,7 @@ class Doc implements Arrayable
      *
      * @var string[]
      */
-    private array $responses;
+    private array|null $responses;
 
     /**
      * A list of route path parameters, such as `/users/{id}`.
@@ -185,9 +185,9 @@ class Doc implements Arrayable
         $this->method             = $method;
         $this->httpMethod         = $httpMethod;
         $this->pathParameters     = $pathParameters;
+        $this->responses          = [];
         $this->rules              = $rules;
         $this->docBlock           = $docBlock;
-        $this->responses          = [];
         $this->examples           = $examples;
         $this->fieldInfo          = $fieldInfo;
         $this->rulesOrder         = $rulesOrder;
@@ -400,7 +400,7 @@ class Doc implements Arrayable
     /**
      * @param  string[]  $responses
      */
-    public function setResponses(array $responses): void
+    public function setResponses(array|null $responses = null): void
     {
         $this->responses = $responses;
     }
@@ -500,9 +500,9 @@ class Doc implements Arrayable
             'method'               => $this->method,
             'http_method'          => $this->httpMethod,
             'path_parameters'      => $this->pathParameters,
+            'responses'            => $this->responses,
             'rules'                => $this->rules,
             'doc_block'            => $this->docBlock,
-            'responses'            => $this->responses,
             'examples'             => $this->examples,
             'field_info'           => $this->fieldInfo,
             'rules_order'          => $this->rulesOrder,

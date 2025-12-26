@@ -1,9 +1,17 @@
 <template>
   <div class="h-full flex flex-column">
-    <div v-if="!selectedRouteDetails" class="flex-center">
-      <h3 class="empty-state">Select a route to build your request</h3>
+    <div
+      v-if="!selectedRouteDetails"
+      class="flex-center"
+    >
+      <h3 class="empty-state">
+        Select a route to build your request
+      </h3>
     </div>
-    <div v-else class="flex flex-column h-full">
+    <div
+      v-else
+      class="flex flex-column h-full"
+    >
       <!-- Request Method and URL Bar -->
       <div class="request-bar">
         <div class="request-controls">
@@ -24,8 +32,8 @@
             v-if="!apiStore.isExampleMode"
             type="primary"
             :loading="apiStore.sendingRequest"
-            @click="sendCurrentRequest"
             class="send-button"
+            @click="sendCurrentRequest"
           >
             <template #icon>
               <n-icon><SendOutline /></n-icon>
@@ -84,23 +92,44 @@
         </div>
 
         <div class="tab-content-area">
-          <div v-if="currentTab === 'params'" class="tab-content-scroll">
-            <div v-if="pathParams.length > 0" class="section">
-              <h4 class="section-title">PATH PARAMETERS</h4>
-              <KeyValueEditor v-model="pathParams" :key-readonly="true" />
+          <div
+            v-if="currentTab === 'params'"
+            class="tab-content-scroll"
+          >
+            <div
+              v-if="pathParams.length > 0"
+              class="section"
+            >
+              <h4 class="section-title">
+                PATH PARAMETERS
+              </h4>
+              <KeyValueEditor
+                v-model="pathParams"
+                :key-readonly="true"
+              />
             </div>
             <div class="section">
-              <h4 class="section-title">QUERY PARAMETERS</h4>
+              <h4 class="section-title">
+                QUERY PARAMETERS
+              </h4>
               <KeyValueEditor v-model="queryParams" />
             </div>
           </div>
 
-          <div v-else-if="currentTab === 'headers'" class="tab-content-scroll">
-            <h4 class="section-title">REQUEST HEADERS</h4>
+          <div
+            v-else-if="currentTab === 'headers'"
+            class="tab-content-scroll"
+          >
+            <h4 class="section-title">
+              REQUEST HEADERS
+            </h4>
             <KeyValueEditor v-model="headers" />
           </div>
 
-          <div v-else-if="currentTab === 'body'" class="tab-content-body">
+          <div
+            v-else-if="currentTab === 'body'"
+            class="tab-content-body"
+          >
             <RequestBodyEditor 
               :code="requestBody"
               @update:code="requestBody = $event"
@@ -108,7 +137,10 @@
             />
           </div>
 
-          <div v-else-if="currentTab === 'rules'" class="tab-content-validation">
+          <div
+            v-else-if="currentTab === 'rules'"
+            class="tab-content-validation"
+          >
             <RulesTable 
               v-if="selectedRouteDetails" 
               :rules="selectedRouteDetails.rules" 
@@ -128,7 +160,10 @@
       :bordered="false"
     >
       <div style="height: calc(90vh - 120px);">
-        <RequestBodyEditor :code="requestBody" @update:code="requestBody = $event" />
+        <RequestBodyEditor
+          :code="requestBody"
+          @update:code="requestBody = $event"
+        />
       </div>
     </n-modal>
   </div>
@@ -138,7 +173,7 @@
 import { ref, watch, computed } from 'vue';
 import { useApiStore } from '@/stores/api';
 import { storeToRefs } from 'pinia';
-import { NInput, NButton, NSelect, NIcon, NModal, NSpace, NButtonGroup } from 'naive-ui';
+import { NInput, NButton, NSelect, NIcon, NModal, NSpace } from 'naive-ui';
 import { SendOutline, ListOutline, CodeSlashOutline, DocumentTextOutline, ShieldCheckmarkOutline } from '@vicons/ionicons5';
 import RulesTable from '@/components/elements/RulesTable.vue';
 import KeyValueEditor from '@/components/elements/KeyValueEditor.vue';

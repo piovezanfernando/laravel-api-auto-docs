@@ -8,7 +8,7 @@
       <n-button
         size="small"
         secondary
-        @click="$emit('open-search')"
+        @click="handleOpenSearch"
       >
         <template #icon>
           <n-icon><SearchOutline /></n-icon>
@@ -19,8 +19,8 @@
       <n-button
         size="small"
         secondary
-        @click="showAuthDialog = true"
         class="ml-2"
+        @click="showAuthDialog = true"
       >
         <template #icon>
           <n-icon><ShieldOutline /></n-icon>
@@ -32,8 +32,8 @@
         size="small"
         quaternary
         circle
-        @click="toggleSettings"
         class="ml-2"
+        @click="toggleSettings"
       >
         <template #icon>
           <n-icon><SettingsOutline /></n-icon>
@@ -44,8 +44,8 @@
         size="small"
         quaternary
         circle
-        @click="$emit('toggle-theme')"
         class="ml-2"
+        @click="handleToggleTheme"
       >
         <template #icon>
           <n-icon><component :is="isDark ? SunnyOutline : MoonOutline" /></n-icon>
@@ -93,37 +93,54 @@
     ref="settingsPopover"
     trigger="manual"
     :show="showSettings"
-    @clickoutside="showSettings = false"
     placement="bottom-end"
     style="width: 280px;"
+    @clickoutside="showSettings = false"
   >
     <template #trigger>
-      <div ref="settingsTrigger"></div>
+      <div ref="settingsTrigger" />
     </template>
     
     <div class="settings-panel">
-      <h4 class="settings-title">API Host URL</h4>
+      <h4 class="settings-title">
+        API Host URL
+      </h4>
       <n-input 
         v-model:value="apiStore.apiHost" 
         placeholder="e.g., http://localhost:8000"
         size="small"
       />
 
-      <h4 class="settings-title">Sort By</h4>
-      <n-radio-group v-model:value="apiStore.filters.sortBy" @update:value="(val) => apiStore.updateFilter('sortBy', val)">
+      <h4 class="settings-title">
+        Sort By
+      </h4>
+      <n-radio-group
+        v-model:value="apiStore.filters.sortBy"
+        @update:value="(val) => apiStore.updateFilter('sortBy', val)"
+      >
         <n-space vertical>
-          <n-radio value="asc">Ascending</n-radio>
-          <n-radio value="desc">Descending</n-radio>
+          <n-radio value="asc">
+            Ascending
+          </n-radio>
+          <n-radio value="desc">
+            Descending
+          </n-radio>
         </n-space>
       </n-radio-group>
       
-      <h4 class="settings-title">Method Filters</h4>
+      <h4 class="settings-title">
+        Method Filters
+      </h4>
       <n-space vertical>
-        <div v-for="(value, key) in apiStore.filters.showMethod" :key="key" class="filter-item">
+        <div
+          v-for="(value, key) in apiStore.filters.showMethod"
+          :key="key"
+          class="filter-item"
+        >
           <n-switch 
             :value="value" 
-            @update:value="(val) => apiStore.updateFilter(key, val)"
             size="small"
+            @update:value="(val) => apiStore.updateFilter(key, val)"
           />
           <span class="filter-label">{{ key }}</span>
         </div>
@@ -155,6 +172,14 @@ const settingsTrigger = ref<HTMLElement>();
 
 const toggleSettings = () => {
   showSettings.value = !showSettings.value;
+};
+
+const handleOpenSearch = () => {
+  emit('open-search');
+};
+
+const handleToggleTheme = () => {
+  emit('toggle-theme');
 };
 
 const saveAuthToken = () => {

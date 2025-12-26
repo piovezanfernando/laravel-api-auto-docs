@@ -1,25 +1,29 @@
 <template>
   <div class="key-value-editor">
-    <div v-for="(item, index) in modelValue" :key="index" class="kv-row">
+    <div
+      v-for="(item, index) in modelValue"
+      :key="index"
+      class="kv-row"
+    >
       <n-input
         placeholder="Key"
         :value="item.key"
         :readonly="keyReadonly"
-        @update:value="updateItem(index, 'key', $event || '')"
         size="small"
+        @update:value="updateItem(index, 'key', $event || '')"
       />
       <n-input
         placeholder="Value"
         :value="item.value"
-        @update:value="updateItem(index, 'value', $event || '')"
         size="small"
+        @update:value="updateItem(index, 'value', $event || '')"
       />
       <n-button
         quaternary
         type="error"
-        @click="removeItem(index)"
         :disabled="keyReadonly"
         size="small"
+        @click="removeItem(index)"
       >
         <template #icon>
           <n-icon><TrashOutline /></n-icon>
@@ -29,9 +33,9 @@
     <n-button
       text
       size="small"
-      @click="addItem"
       :disabled="keyReadonly"
       class="add-button"
+      @click="addItem"
     >
       <template #icon>
         <n-icon><AddOutline /></n-icon>
