@@ -43,15 +43,15 @@
     },
     "docBlock": "",
     "responses": {
-      "first_name": "sample first_name",
-      "last_name": "sample last_name",
-      "nick_name": "sample nick_name",
-      "age": "sample age",
-      "birthdate": "sample birthdate",
-      "email": "sample email",
-      "roles": "sample roles",
-      "password": "sample password",
-      "password_confirm": "sample password_confirm"
+      "first_name": "John",
+      "last_name": "Doe",
+      "nick_name": "johndoe",
+      "age": 25,
+      "birthdate": "2000-01-01",
+      "email": "john.doe@example.com",
+      "roles": "admin",
+      "password": "********",
+      "password_confirm": "********"
     }
   },
   {
@@ -71,7 +71,11 @@
     "path_parameters": [],
     "rules": [],
     "docBlock": "Documentation for the dashboard chart",
-    "responses": {}
+    "responses": [
+      {
+        "message": "Sample response for api/chart"
+      }
+    ]
   },
   {
     "uri": "api/documentation",
@@ -89,7 +93,11 @@
     "path_parameters": [],
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": [
+      {
+        "message": "Sample response for api/documentation"
+      }
+    ]
   },
   {
     "uri": "api/export",
@@ -108,7 +116,11 @@
     "path_parameters": [],
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": [
+      {
+        "message": "Sample response for api/export"
+      }
+    ]
   },
   {
     "uri": "api/login",
@@ -125,7 +137,9 @@
     "path_parameters": [],
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": {
+      "message": "Sample response for api/login"
+    }
   },
   {
     "uri": "api/logout",
@@ -144,7 +158,11 @@
     "path_parameters": [],
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": [
+      {
+        "message": "Sample response for api/logout"
+      }
+    ]
   },
   {
     "uri": "api/oauth2-callback",
@@ -162,7 +180,11 @@
     "path_parameters": [],
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": [
+      {
+        "message": "Sample response for api/oauth2-callback"
+      }
+    ]
   },
   {
     "uri": "api/orders",
@@ -182,7 +204,9 @@
     "rules": [],
     "docBlock": "",
     "responses": [
-      {}
+      {
+        "message": "Sample response for api/orders"
+      }
     ]
   },
   {
@@ -206,7 +230,9 @@
     },
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": {
+      "order": "sample order"
+    }
   },
   {
     "uri": "api/permissions",
@@ -226,7 +252,9 @@
     "rules": [],
     "docBlock": "",
     "responses": [
-      {}
+      {
+        "message": "Sample response for api/permissions"
+      }
     ]
   },
   {
@@ -259,10 +287,10 @@
     },
     "docBlock": "",
     "responses": {
-      "image": "sample image",
-      "title": "sample title",
-      "description": "sample description",
-      "price": "sample price"
+      "image": "http://example.com/image.png",
+      "title": "Sample Title",
+      "description": "A sample description.",
+      "price": 10.99
     }
   },
   {
@@ -283,7 +311,9 @@
     "rules": [],
     "docBlock": "",
     "responses": [
-      {}
+      {
+        "message": "Sample response for api/products"
+      }
     ]
   },
   {
@@ -306,7 +336,9 @@
     },
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": {
+      "product": "sample product"
+    }
   },
   {
     "uri": "api/products/{product}",
@@ -329,7 +361,9 @@
     },
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": {
+      "product": "sample product"
+    }
   },
   {
     "uri": "api/products/{product}",
@@ -363,9 +397,9 @@
     },
     "docBlock": "",
     "responses": {
-      "title": "sample title",
-      "description": "sample description",
-      "price": "sample price"
+      "title": "Sample Title",
+      "description": "A sample description.",
+      "price": 10.99
     }
   },
   {
@@ -401,12 +435,12 @@
     },
     "docBlock": "",
     "responses": {
-      "first_name": "sample first_name",
-      "last_name": "sample last_name",
-      "nick_name": "sample nick_name",
-      "email": "sample email",
-      "password": "sample password",
-      "password_confirm": "sample password_confirm"
+      "first_name": "John",
+      "last_name": "Doe",
+      "nick_name": "johndoe",
+      "email": "john.doe@example.com",
+      "password": "********",
+      "password_confirm": "********"
     }
   },
   {
@@ -425,7 +459,9 @@
     "path_parameters": [],
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": {
+      "message": "Sample response for api/roles"
+    }
   },
   {
     "uri": "api/roles",
@@ -445,7 +481,9 @@
     "rules": [],
     "docBlock": "",
     "responses": [
-      {}
+      {
+        "message": "Sample response for api/roles"
+      }
     ]
   },
   {
@@ -468,7 +506,9 @@
     },
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": {
+      "role": "admin"
+    }
   },
   {
     "uri": "api/roles/{role}",
@@ -491,7 +531,9 @@
     },
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": {
+      "role": "admin"
+    }
   },
   {
     "uri": "api/roles/{role}",
@@ -514,7 +556,9 @@
     },
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": {
+      "role": "admin"
+    }
   },
   {
     "uri": "api/upload",
@@ -537,7 +581,7 @@
     },
     "docBlock": "",
     "responses": {
-      "image": "sample image"
+      "image": "http://example.com/image.png"
     }
   },
   {
@@ -557,7 +601,11 @@
     "path_parameters": [],
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": [
+      {
+        "message": "Sample response for api/user"
+      }
+    ]
   },
   {
     "uri": "api/users",
@@ -589,10 +637,10 @@
     },
     "docBlock": "",
     "responses": {
-      "first_name": "sample first_name",
-      "last_name": "sample last_name",
-      "email": "sample email",
-      "role_id": "sample role_id"
+      "first_name": "John",
+      "last_name": "Doe",
+      "email": "john.doe@example.com",
+      "role_id": "admin"
     }
   },
   {
@@ -613,7 +661,9 @@
     "rules": [],
     "docBlock": "",
     "responses": [
-      {}
+      {
+        "message": "Sample response for api/users"
+      }
     ]
   },
   {
@@ -640,8 +690,8 @@
     },
     "docBlock": "",
     "responses": {
-      "password": "sample password",
-      "password_confirm": "sample password_confirm"
+      "password": "********",
+      "password_confirm": "********"
     }
   },
   {
@@ -668,8 +718,8 @@
     },
     "docBlock": "",
     "responses": {
-      "password": "sample password",
-      "password_confirm": "sample password_confirm"
+      "password": "********",
+      "password_confirm": "********"
     }
   },
   {
@@ -692,7 +742,9 @@
     },
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": {
+      "user": "sample user"
+    }
   },
   {
     "uri": "api/users/{user}",
@@ -715,7 +767,9 @@
     },
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": {
+      "user": "sample user"
+    }
   },
   {
     "uri": "api/users/{user}",
@@ -752,10 +806,10 @@
     },
     "docBlock": "",
     "responses": {
-      "first_name": "sample first_name",
-      "last_name": "sample last_name",
-      "email": "sample email",
-      "role_id": "sample role_id"
+      "first_name": "John",
+      "last_name": "Doe",
+      "email": "john.doe@example.com",
+      "role_id": "admin"
     }
   },
   {
@@ -774,7 +828,9 @@
     "path_parameters": [],
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": {
+      "message": "Sample response for oauth/authorize"
+    }
   },
   {
     "uri": "oauth/authorize",
@@ -792,7 +848,9 @@
     "path_parameters": [],
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": {
+      "message": "Sample response for oauth/authorize"
+    }
   },
   {
     "uri": "oauth/authorize",
@@ -811,7 +869,11 @@
     "path_parameters": [],
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": [
+      {
+        "message": "Sample response for oauth/authorize"
+      }
+    ]
   },
   {
     "uri": "oauth/clients",
@@ -829,7 +891,9 @@
     "path_parameters": [],
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": {
+      "message": "Sample response for oauth/clients"
+    }
   },
   {
     "uri": "oauth/clients",
@@ -848,7 +912,11 @@
     "path_parameters": [],
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": [
+      {
+        "message": "Sample response for oauth/clients"
+      }
+    ]
   },
   {
     "uri": "oauth/clients/{client_id}",
@@ -870,7 +938,9 @@
     },
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": {
+      "client_id": "sample client_id"
+    }
   },
   {
     "uri": "oauth/clients/{client_id}",
@@ -892,7 +962,9 @@
     },
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": {
+      "client_id": "sample client_id"
+    }
   },
   {
     "uri": "oauth/personal-access-tokens",
@@ -910,7 +982,9 @@
     "path_parameters": [],
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": {
+      "message": "Sample response for oauth/personal-access-tokens"
+    }
   },
   {
     "uri": "oauth/personal-access-tokens",
@@ -929,7 +1003,11 @@
     "path_parameters": [],
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": [
+      {
+        "message": "Sample response for oauth/personal-access-tokens"
+      }
+    ]
   },
   {
     "uri": "oauth/personal-access-tokens/{token_id}",
@@ -951,7 +1029,9 @@
     },
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": {
+      "token_id": "jwt-token-string"
+    }
   },
   {
     "uri": "oauth/scopes",
@@ -970,7 +1050,11 @@
     "path_parameters": [],
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": [
+      {
+        "message": "Sample response for oauth/scopes"
+      }
+    ]
   },
   {
     "uri": "oauth/token",
@@ -987,7 +1071,9 @@
     "path_parameters": [],
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": {
+      "message": "Sample response for oauth/token"
+    }
   },
   {
     "uri": "oauth/token/refresh",
@@ -1005,7 +1091,9 @@
     "path_parameters": [],
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": {
+      "message": "Sample response for oauth/token/refresh"
+    }
   },
   {
     "uri": "oauth/tokens",
@@ -1024,7 +1112,11 @@
     "path_parameters": [],
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": [
+      {
+        "message": "Sample response for oauth/tokens"
+      }
+    ]
   },
   {
     "uri": "oauth/tokens/{token_id}",
@@ -1046,6 +1138,8 @@
     },
     "rules": [],
     "docBlock": "",
-    "responses": {}
+    "responses": {
+      "token_id": "jwt-token-string"
+    }
   }
 ]
