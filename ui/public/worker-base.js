@@ -11,7 +11,7 @@ if (!window.console) {
         postMessage({type: "log", data: msgs});
     };
     window.console.error =
-    window.console.warn = 
+    window.console.warn =
     window.console.log =
     window.console.trace = window.console;
 }
@@ -23,7 +23,7 @@ window.onerror = function(message, file, line, col, err) {
         message: message,
         data: err && err.data,
         file: file,
-        line: line, 
+        line: line,
         col: col,
         stack: err && err.stack
     }});
@@ -39,13 +39,13 @@ window.normalizeModule = function(parentId, moduleName) {
     if (moduleName.charAt(0) == ".") {
         var base = parentId.split("/").slice(0, -1).join("/");
         moduleName = (base ? base + "/" : "") + moduleName;
-        
+
         while (moduleName.indexOf(".") !== -1 && previous != moduleName) {
             var previous = moduleName;
             moduleName = moduleName.replace(/^\.\//, "").replace(/\/\.\//, "/").replace(/[^\/]+\/\.\.\//, "");
         }
     }
-    
+
     return moduleName;
 };
 
@@ -67,13 +67,13 @@ window.require = function require(parentId, id) {
         }
         return module.exports;
     }
-   
+
     if (!window.require.tlns)
         return console.log("unable to load " + id);
-    
+
     var path = resolveModuleId(id, window.require.tlns);
     if (path.slice(-3) != ".js") path += ".js";
-    
+
     window.require.id = id;
     window.require.modules[id] = {}; // prevent infinite loop on broken modules
     importScripts(path);
@@ -112,7 +112,7 @@ window.define = function(id, deps, factory) {
         deps = [];
         id = window.require.id;
     }
-    
+
     if (typeof factory != "function") {
         window.require.modules[id] = {
             exports: factory,
@@ -163,13 +163,13 @@ window.initSender = function initSender() {
 
     var EventEmitter = window.require("ace/lib/event_emitter").EventEmitter;
     var oop = window.require("ace/lib/oop");
-    
+
     var Sender = function() {};
-    
+
     (function() {
-        
+
         oop.implement(this, EventEmitter);
-                
+
         this.callback = function(data, callbackId) {
             postMessage({
                 type: "call",
@@ -177,7 +177,7 @@ window.initSender = function initSender() {
                 data: data
             });
         };
-    
+
         this.emit = function(name, data) {
             postMessage({
                 type: "event",
@@ -185,9 +185,9 @@ window.initSender = function initSender() {
                 data: data
             });
         };
-        
+
     }).call(Sender.prototype);
-    
+
     return new Sender();
 };
 
@@ -1262,13 +1262,13 @@ ace.define("ace/worker/mirror",[], function(require, exports, module) {
 
 var Document = require("../document").Document;
 var lang = require("../lib/lang");
-    
+
 var Mirror = exports.Mirror = function(sender) {
     this.sender = sender;
     var doc = this.doc = new Document("");
-    
+
     var deferredUpdate = this.deferredUpdate = lang.delayedCall(this.onUpdate.bind(this));
-    
+
     var _self = this;
     sender.on("change", function(e) {
         var data = e.data;
@@ -1276,13 +1276,13 @@ var Mirror = exports.Mirror = function(sender) {
             doc.applyDeltas(data);
         } else {
             for (var i = 0; i < data.length; i += 2) {
-                var d, err; 
+                var d, err;
                 if (Array.isArray(data[i+1])) {
                     d = {action: "insert", start: data[i], lines: data[i+1]};
                 } else {
                     d = {action: "remove", start: data[i], end: data[i+1]};
                 }
-                
+
                 if ((d.action == "insert" ? d.start : d.end).row >= doc.$lines.length) {
                     err = new Error("Invalid delta");
                     err.data = {
@@ -1304,29 +1304,29 @@ var Mirror = exports.Mirror = function(sender) {
 };
 
 (function() {
-    
+
     this.$timeout = 500;
-    
+
     this.setTimeout = function(timeout) {
         this.$timeout = timeout;
     };
-    
+
     this.setValue = function(value) {
         this.doc.setValue(value);
         this.deferredUpdate.schedule(this.$timeout);
     };
-    
+
     this.getValue = function(callbackId) {
         this.sender.callback(this.doc.getValue(), callbackId);
     };
-    
+
     this.onUpdate = function() {
     };
-    
+
     this.isPending = function() {
         return this.deferredUpdate.isPending();
     };
-    
+
 }).call(Mirror.prototype);
 
 });
