@@ -157,4 +157,30 @@ class LaravelApiAutoDocsController extends Controller
     {
         return response()->view('api-auto-docs::index');
     }
+
+    public function asset(string $path): \Illuminate\Http\Response
+    {
+        $file = __DIR__ . '/../../resources/dist/' . $path;
+
+        if (!file_exists($file)) {
+            abort(404);
+        }
+
+        $extension = pathinfo($path, PATHINFO_EXTENSION);
+
+        $mime = match ($extension) {
+            'js'   => 'application/javascript',
+            'css'  => 'text/css',
+            'svg'  => 'image/svg+xml',
+            'png'  => 'image/png',
+            'jpg', 'jpeg' => 'image/jpeg',
+            'ico'  => 'image/x-icon',
+            default => 'text/plain',
+        };
+
+        return response(file_get_contents($file), 200, [
+            'Content-Type' => $mime,
+            'Cache-Control' => 'public, max-age=31536000',
+        ]);
+    }
 }
