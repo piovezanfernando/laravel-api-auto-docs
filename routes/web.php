@@ -22,6 +22,10 @@ Route::get('docs-api/config', [LaravelApiAutoDocsController::class, 'config'])
     ->name('docs-api.config')
     ->middleware(config('api-auto-docs.middlewares', []));
 
+Route::get('api-auto-docs/{path}', [LaravelApiAutoDocsController::class, 'asset'])
+    ->where('path', '.*')
+    ->name('docs-api.asset');
+
 Route::get('docs-api/api', [LaravelApiAutoDocsController::class, 'api'])
     ->name('docs-api.api')
     ->middleware(config('api-auto-docs.middlewares', []));
